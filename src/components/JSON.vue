@@ -95,14 +95,16 @@ import bookstores from "../assets/json/bookstores.json"
 const showMessage = ref(false)
 
 // Activity 2.1: Get authors born after 1850
-const modernAuthors = computed(() => {
-  // TODO: CODE TO FILTER ARRAY OF AUTHORS HERE
-})
+const modernAuthors = computed(() =>
+  authors.filter((author) => author.birthYear > 1850)
+);
+
 
 // Activity 2.2: Get all famous works
-const allFamousWorks = computed(() => {
-  // TODO: CODE TO GET ALL FAMOUS WORKS HERE
-})
+const allFamousWorks = computed(() =>
+  authors.flatMap((author) => author.famousWorks.map((work) => work.title))
+);
+
 
 </script>
 
