@@ -10,7 +10,7 @@
       <h3>Iterating through Arrays</h3>
       <!-- Activity 3.1: Render a list containing author names and their birth years. Hint: Make use of the v-for directive to iterate through the array of authors. -->
       <ul>
-        <li v-for="author in authors" :key="author.id" :style="{ color: textColor, fontSize: fontSize + 'px' }">
+        <li v-for="author in authors" :key="author.id" :style="author.name === 'George Orwell' ? { color: textColor, fontSize: fontSize + 'px' } : {}">
           {{ author.name }} ({{ author.birthYear }})
         </li>
       </ul>
@@ -20,7 +20,7 @@
       <!-- Activity 3.2: Render a list containing authors born after 1850. Hint: Make use of the v-for directive to iterate through the array of authors that you have filtered out. -->
       <p>Authors born after 1850:</p>
       <ul>
-        <li v-for="author in modernAuthors" :key="author.id" :style="{ color: textColor, fontSize: fontSize + 'px' }"> 
+        <li v-for="author in authors" :key="author.id" :style="author.name === 'George Orwell' ? { color: textColor, fontSize: fontSize + 'px' } : {}">
           {{ author.name }} ({{ author.birthYear }})
         </li>
       </ul>
