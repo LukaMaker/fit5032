@@ -6,23 +6,23 @@
         <h1 class="textCenter">User Information Form / Credentials</h1>
         <form @submit.prevent="submitForm">
             <div class="row md-3">
-                <div class="col-md-6">
+                <div class="col-6">
                     <label for="username" class="form-label">Username:</label><br>
                     <input type="text" class="form-control" id="username" v-model="formData.username"><br>
                 </div>
-                <div class="col-md-6">
+                <div class="col-6">
                     <label for="password" class="form-label">Password:</label><br>
                     <input type="password" class="form-control" id="password" v-model="formData.password"><br>
                 </div>
             </div>
             <div class="row md-3">
-                <div class="col-md-6">
+                <div class="col-6">
                     <div class="form-check">
                         <input type="checkbox" class="form-check-input" id="isAustralian" v-model="formData.isAustralian">
                         <label class="form-check-label" for="isAustralian">Australian Resident?</label><br>
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-6">
                     <label for="gender" class="form-label">Gender</label><br>
                     <select class="form-select" id="gender"  v-model="formData.gender">
                         <option value="female">Female</option>
