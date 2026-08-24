@@ -6,10 +6,12 @@ import Column from 'primevue/column'
 const formData = ref({
   username: '',
   password: '',
+  confirmPassword: '',
   isAustralian: false,
   reason: '',
   gender: ''
 })
+
 
 const submittedCards = ref([])
 
@@ -35,16 +37,44 @@ const clearForm = () => {
 const errors = ref({
   username: null,
   password: null,
+  confirmPassword: null,
   resident: null,
   gender: null,
   reason: null
 })
+
+const success = ref ({
+  reason: null
+})
+
 
 const validateName = (blur) => {
   if (formData.value.username.length < 3) {
     if (blur) errors.value.username = 'Name must be at least 3 characters'
   } else {
     errors.value.username = null
+  }
+}
+/**
+ * Confirm password validation function that checks if the password and confirm password fields match.
+ * @param blur: boolean - If true, the function will display an error message if the passwords do not match.
+ */
+const validateConfirmPassword = (blur) => {
+  if (formData.value.password !== formData.value.confirmPassword) {
+    if (blur) errors.value.confirmPassword = 'Passwords do not match.'
+  } else {
+    errors.value.confirmPassword = null
+  }
+}
+
+const hasFriend = (input) => {
+  if (formData.value.reason.includes("friend")) {
+    if (input) success.value.reason = "Great to have a friend!";
+    else{
+      success.value.reason = null;
+    }
+  } else {
+    success.value.reason = null;
   }
 }
 
@@ -96,8 +126,17 @@ const validatePassword = (blur) => {
               />
               <div v-if="errors.username" class="text-danger">{{ errors.username }}</div>
             </div>
-
             <div class="col-md-6 col-sm-6">
+              <label for="gender" class="form-label">Gender</label>
+              <select class="form-select" id="gender" v-model="formData.gender" required>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+        <div class="row mb-3">
+          <div class="col-md-6 col-sm-6">
               <label for="password" class="form-label">Password</label>
               <input
                 type="password"
@@ -109,36 +148,45 @@ const validatePassword = (blur) => {
               />
               <div v-if="errors.password" class="text-danger">{{ errors.password }}</div>
             </div>
+            <div class="col-md-6 col-sm-6">
+                <label for="confirm-password" class="form-label">Confirm password</label>
+                <input
+                    type="password"
+                    class="form-control"
+                    id="confirm-password"
+                    v-model="formData.confirmPassword"
+                    @blur="() => validateConfirmPassword(true)"
+                />
+                <div v-if="errors.confirmPassword" class="text-danger">
+                    {{ errors.confirmPassword }}
+                </div>
+            </div>
+
           </div>
           <div class="row mb-3">
-            <div class="col-md-6 col-sm-6">
-              <div class="form-check">
-                <input
-                  type="checkbox"
-                  class="form-check-input"
-                  id="isAustralian"
-                  v-model="formData.isAustralian"
-                />
-                <label class="form-check-label" for="isAustralian">Australian Resident?</label>
-              </div>
-            </div>
-            <div class="col-md-6 col-sm-6">
-              <label for="gender" class="form-label">Gender</label>
-              <select class="form-select" id="gender" v-model="formData.gender" required>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
+            <div class="form-check">
+            <input
+              type="checkbox"
+              class="form-check-input"
+              id="isAustralian"
+              v-model="formData.isAustralian"
+            />
+            <label class="form-check-label" for="isAustralian">Australian Resident?</label>
+          </div>
+            
           </div>
           <div class="mb-3">
             <label for="reason" class="form-label">Reason for joining</label>
             <textarea
+              @input="() => hasFriend(true)"
               class="form-control"
               id="reason"
               rows="3"
               v-model="formData.reason"
             ></textarea>
+            <div v-if="success.reason" class="text-success">
+                    {{ success.reason }}
+                </div>
           </div>
           <div class="text-center">
             <button type="submit" class="btn btn-primary me-2">Submit</button>
