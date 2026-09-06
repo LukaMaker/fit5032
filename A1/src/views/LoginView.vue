@@ -1,57 +1,79 @@
 <script setup>
 import NavBar from '../components/NavBar.vue';
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
-const formData = ref({
-  username: '',
+const router = useRouter()
+
+const loginData = ref({
+  firstName: '',
+  lastName: '',
+  email: '',
   password: '',
-  confirmPassword: '',
-  isAustralian: false,
-  reason: '',
-  gender: ''
+  confirmPassword: ''
 })
 
 
 const submittedCards = ref([])
 
 const submitForm = () => {
-  validateName(true)
+  validateFirstName(true)
+  validateLastName(true)
+  validateEmail(true)
   validatePassword(true)
-  if (!errors.value.username && !errors.value.password) {
-    submittedCards.value.push({ ...formData.value })
+  validateConfirmPassword(true)
+  if (!errors.value.firstName && !errors.value.lastName && !errors.value.confirmPassword && !errors.value.password && !errors.value.email) {
+    submittedCards.value.push({ ...loginData.value })
+    localStorage.setItem('submittedCards', JSON.stringify(submittedCards.value))
     clearForm()
+    router.push('/')
   }
 }
 
 const clearForm = () => {
-  formData.value = {
-    username: '',
+  loginData.value = {
+    firstName: '',
+    lastName: '',
+    email: '',
     password: '',
-    isAustralian: false,
-    reason: '',
-    gender: ''
+    confirmPassword: ''
   }
 }
 
 const errors = ref({
-  username: null,
+  firstName: null,
+  lastName: null,
+  email: null,
   password: null,
-  confirmPassword: null,
-  resident: null,
-  gender: null,
-  reason: null
-})
-
-const success = ref ({
-  reason: null
+  confirmPassword: null
 })
 
 
-const validateName = (blur) => {
-  if (formData.value.username.length < 3) {
-    if (blur) errors.value.username = 'Name must be at least 3 characters'
+const validateFirstName = (blur) => {
+  if (loginData.value.firstName.length < 1) {
+    if (blur) errors.value.firstName = 'Name must be at least 1 character'
   } else {
-    errors.value.username = null
+    errors.value.firstName = null
+  }
+}
+
+const validateLastName = (blur) => {
+  if (loginData.value.lastName.length < 1) {
+    if (blur) errors.value.lastName = 'Name must be at least 1 character'
+  } else {
+    errors.value.lastName = null
+  }
+}
+
+const validateEmail = (blur) => {
+  const email = loginData.value.email
+
+  if (email.length < 1) {
+    if (blur) errors.value.email = 'Email is required'
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (blur) errors.value.email = 'Please enter a valid email address'
+  } else {
+    errors.value.email = null
   }
 }
 /**
@@ -59,26 +81,15 @@ const validateName = (blur) => {
  * @param blur: boolean - If true, the function will display an error message if the passwords do not match.
  */
 const validateConfirmPassword = (blur) => {
-  if (formData.value.password !== formData.value.confirmPassword) {
+  if (loginData.value.password !== loginData.value.confirmPassword) {
     if (blur) errors.value.confirmPassword = 'Passwords do not match.'
   } else {
     errors.value.confirmPassword = null
   }
 }
 
-const hasFriend = (input) => {
-  if (formData.value.reason.includes("friend")) {
-    if (input) success.value.reason = "Great to have a friend!";
-    else{
-      success.value.reason = null;
-    }
-  } else {
-    success.value.reason = null;
-  }
-}
-
 const validatePassword = (blur) => {
-  const password = formData.value.password
+  const password = loginData.value.password
   const minLength = 8
   const hasUppercase = /[A-Z]/.test(password)
   const hasLowercase = /[a-z]/.test(password)
@@ -107,34 +118,49 @@ const validatePassword = (blur) => {
   <div class="container mt-5">
     <div class="row">
       <div class="col-md-8 offset-md-2">
-        <h1 class="text-center">🗄️ W4. Library Registration Form</h1>
-        <p class="text-center">
-          This form now includes validation. Registered users are displayed in a data table below
-          (PrimeVue).
-        </p>
+        <h1 class="text-center">Create Account</h1>
         <form @submit.prevent="submitForm">
           <div class="row mb-3">
             <div class="col-md-6 col-sm-6">
-              <label for="username" class="form-label">Username</label>
+              <label for="name" class="form-label">First Name</label>
               <input
                 type="text"
                 class="form-control"
-                id="username"
-                @blur="() => validateName(true)"
-                @input="() => validateName(false)"
-                v-model="formData.username"
+                id="firstname"
+                @blur="() => validateFirstName(true)"
+                @input="() => validateFirstName(false)"
+                v-model="loginData.firstName"
               />
-              <div v-if="errors.username" class="text-danger">{{ errors.username }}</div>
+              <div v-if="errors.firstName" class="text-danger">{{ errors.firstName }}</div>
             </div>
             <div class="col-md-6 col-sm-6">
-              <label for="gender" class="form-label">Gender</label>
-              <select class="form-select" id="gender" v-model="formData.gender" required>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-              </select>
+              <label for="name" class="form-label">Last Name</label>
+              <input
+                type="text"
+                class="form-control"
+                id="lastname"
+                @blur="() => validateLastName(true)"
+                @input="() => validateLastName(false)"
+                v-model="loginData.lastName"
+              />
+              <div v-if="errors.lastName" class="text-danger">{{ errors.lastName }}</div>
             </div>
           </div>
+          
+          <div class="row mb-3">
+            <div class="col">
+            <label for="name" class="form-label">Email</label>
+            <input
+            type="text"
+            class="form-control"
+            id="email"
+            @blur="() => validateEmail(true)"
+            @input="() => validateEmail(false)"
+            v-model="loginData.email"
+            />
+            <div v-if="errors.email" class="text-danger">{{ errors.email }}</div>
+            </div>
+        </div>
         <div class="row mb-3">
           <div class="col-md-6 col-sm-6">
               <label for="password" class="form-label">Password</label>
@@ -144,7 +170,7 @@ const validatePassword = (blur) => {
                 id="password"
                 @blur="() => validatePassword(true)"
                 @input="() => validatePassword(false)"
-                v-model="formData.password"
+                v-model="loginData.password"
               />
               <div v-if="errors.password" class="text-danger">{{ errors.password }}</div>
             </div>
@@ -154,39 +180,13 @@ const validatePassword = (blur) => {
                     type="password"
                     class="form-control"
                     id="confirm-password"
-                    v-model="formData.confirmPassword"
+                    v-model="loginData.confirmPassword"
                     @blur="() => validateConfirmPassword(true)"
                 />
                 <div v-if="errors.confirmPassword" class="text-danger">
                     {{ errors.confirmPassword }}
                 </div>
             </div>
-
-          </div>
-          <div class="row mb-3">
-            <div class="form-check">
-            <input
-              type="checkbox"
-              class="form-check-input"
-              id="isAustralian"
-              v-model="formData.isAustralian"
-            />
-            <label class="form-check-label" for="isAustralian">Australian Resident?</label>
-          </div>
-            
-          </div>
-          <div class="mb-3">
-            <label for="reason" class="form-label">Reason for joining</label>
-            <textarea
-              @input="() => hasFriend(true)"
-              class="form-control"
-              id="reason"
-              rows="3"
-              v-model="formData.reason"
-            ></textarea>
-            <div v-if="success.reason" class="text-success">
-                    {{ success.reason }}
-                </div>
           </div>
           <div class="text-center">
             <button type="submit" class="btn btn-primary me-2">Submit</button>

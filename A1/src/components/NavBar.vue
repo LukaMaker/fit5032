@@ -1,6 +1,10 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue'
+
+const submittedCards = ref(JSON.parse(localStorage.getItem('submittedCards')) || [])
 const isOpen = ref(false);
+
+const loginLabel = computed(() => submittedCards.value.length > 0 ? 'Profile' : 'Login')
 </script>
 
 <template>
@@ -36,7 +40,7 @@ const isOpen = ref(false);
             <router-link to="/impact" class="nav-link text-nowrap" active-class="active">Impact</router-link>
           </li>
           <li class="nav-item">
-            <router-link to="/login" class="nav-link text-nowrap" active-class="active">Login</router-link>
+            <router-link to="/login" class="nav-link text-nowrap" active-class="active">{{ loginLabel }}</router-link>
           </li>
         </ul>
       </div>
@@ -58,7 +62,7 @@ const isOpen = ref(false);
           <router-link to="/impact" class="nav-link text-nowrap" active-class="active">Impact</router-link>
         </li>
         <li class="nav-item">
-          <router-link to="/login" class="nav-link text-nowrap" active-class="active">Login</router-link>
+          <router-link to="/login" class="nav-link text-nowrap" active-class="active">{{ loginLabel }}</router-link>
         </li>
       </ul>
     </header>
