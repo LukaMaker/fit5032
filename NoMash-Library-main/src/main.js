@@ -24,9 +24,9 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig); 
-createApp(App)
+const firebaseApp = initializeApp(firebaseConfig)
+
+const app = createApp(App)
 app.use(PrimeVue, { theme: { preset: Aura } })
 app.use(router)
-
 app.mount('#app')
