@@ -2,10 +2,12 @@
 import NavBar from '../components/NavBar.vue';
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { auth, createUserWithEmailAndPassword } from "firebase/auth"
+import { getAuth, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
+import { getFirestore, doc, setDoc } from 'firebase/firestore'
 
 const router = useRouter()
 const auth = getAuth()
+const db = getFirestore()
 
 const createData = ref({
   firstName: '',
@@ -15,21 +17,36 @@ const createData = ref({
   confirmPassword: ''
 })
 
-const register = () => {
+const register = async () => {
   validateFirstName(true)
   validateLastName(true)
   validateEmail(true)
   validatePassword(true)
   validateConfirmPassword(true)
   if (!errors.value.firstName && !errors.value.lastName && !errors.value.confirmPassword && !errors.value.password && !errors.value.email) {
-    createUserWithEmailAndPassword(auth, createData.value.email, createData.value.password)
-    .then((data) => {
-      //send new account into to database
-      localStorage.setItem('submittedCards', JSON.stringify(submittedCards.value))
-      router.push('/login')
-    }).catch((error) => {
-      console.log(error.code);
+    try {
+    const { user } = await createUserWithEmailAndPassword(
+      auth,
+      createData.value.email,
+      createData.value.password
+    )
+
+    await updateProfile(user, {
+      displayName: `${createData.value.firstName}`
     })
+
+    await setDoc(doc(db, 'users', user.uid), {
+      firstName: createData.value.firstName,
+      lastName: createData.value.lastName,
+      email: createData.value.email,
+      role: 'user', // default role
+      createdAt: new Date().toISOString()
+    })
+
+    router.push('/login')
+  } catch (error) {
+    console.log(error.code)
+  }
   }
 }
 
@@ -119,7 +136,7 @@ const validatePassword = (blur) => {
     <div class="row">
       <div class="col-md-8 offset-md-2">
         <h1 class="text-center">Create Account</h1>
-        <form @submit.prevent="submitForm">
+        <form @submit.prevent="register">
           <div class="row mb-3">
             <div class="col-md-6 col-sm-6">
               <label for="name" class="form-label">First Name</label>
@@ -189,7 +206,7 @@ const validatePassword = (blur) => {
             </div>
           </div>
           <div class="text-center">
-            <button @click="register" class="btn btn-primary me-2">Submit</button>
+            <button type="submit" class="btn btn-primary me-2">Submit</button>
           </div>
         </form>
       </div>

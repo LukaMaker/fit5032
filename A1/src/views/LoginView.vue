@@ -82,7 +82,7 @@ const validatePassword = (blur) => {
     <div class="row">
       <div class="col-md-8 offset-md-2">
         <h1 class="text-center">Log In</h1>
-        <form @submit.prevent="submitForm">
+        <form @submit.prevent="signIn">
           <div class="row mb-3">
             <div class="col">
             <label for="name" class="form-label">Email</label>
@@ -112,7 +112,7 @@ const validatePassword = (blur) => {
             </div>
           </div>
           <div class="text-center">
-            <button @click="signIn" class="btn btn-primary me-2">Submit</button>
+            <button type="submit" class="btn btn-primary me-2">Submit</button>
           </div>
           
         <div class="row mb-3">
