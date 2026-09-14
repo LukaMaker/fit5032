@@ -2,25 +2,28 @@
 import NavBar from '../components/NavBar.vue';
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { auth, signInWithEmailAndPassword } from "firebase/auth"
 
 const router = useRouter()
+const auth = getAuth()
 
 const loginData = ref({
   email: '',
   password: ''
 })
 
-
-const submittedCards = ref([])
-
-const submitForm = () => {
+const signIn = () => {
   validateEmail(true)
   validatePassword(true)
   if (!errors.value.password && !errors.value.email) {
-    submittedCards.value.push({ ...loginData.value })
-    localStorage.setItem('submittedCards', JSON.stringify(submittedCards.value))
-    clearForm()
-    router.push('/')
+    signInWithEmailAndPassword(auth, loginData.value.email, loginData.value.password)
+    .then((data) => {
+      //send new account into to database
+      
+      router.push('/')
+    }).catch((error) => {
+      console.log(error.code);
+    })
   }
 }
 
@@ -109,7 +112,7 @@ const validatePassword = (blur) => {
             </div>
           </div>
           <div class="text-center">
-            <button type="submit" class="btn btn-primary me-2">Submit</button>
+            <button @click="signIn" class="btn btn-primary me-2">Submit</button>
           </div>
           
         <div class="row mb-3">

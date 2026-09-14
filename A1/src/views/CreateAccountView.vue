@@ -2,10 +2,12 @@
 import NavBar from '../components/NavBar.vue';
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { auth, createUserWithEmailAndPassword } from "firebase/auth"
 
 const router = useRouter()
+const auth = getAuth()
 
-const loginData = ref({
+const createData = ref({
   firstName: '',
   lastName: '',
   email: '',
@@ -13,25 +15,26 @@ const loginData = ref({
   confirmPassword: ''
 })
 
-
-const submittedCards = ref([])
-
-const submitForm = () => {
+const register = () => {
   validateFirstName(true)
   validateLastName(true)
   validateEmail(true)
   validatePassword(true)
   validateConfirmPassword(true)
   if (!errors.value.firstName && !errors.value.lastName && !errors.value.confirmPassword && !errors.value.password && !errors.value.email) {
-    submittedCards.value.push({ ...loginData.value })
-    localStorage.setItem('submittedCards', JSON.stringify(submittedCards.value))
-    clearForm()
-    router.push('/')
+    createUserWithEmailAndPassword(auth, createData.value.email, createData.value.password)
+    .then((data) => {
+      //send new account into to database
+      localStorage.setItem('submittedCards', JSON.stringify(submittedCards.value))
+      router.push('/login')
+    }).catch((error) => {
+      console.log(error.code);
+    })
   }
 }
 
 const clearForm = () => {
-  loginData.value = {
+  createData.value = {
     firstName: '',
     lastName: '',
     email: '',
@@ -50,7 +53,7 @@ const errors = ref({
 
 
 const validateFirstName = (blur) => {
-  if (loginData.value.firstName.length < 1) {
+  if (createData.value.firstName.length < 1) {
     if (blur) errors.value.firstName = 'Name must be at least 1 character'
   } else {
     errors.value.firstName = null
@@ -58,7 +61,7 @@ const validateFirstName = (blur) => {
 }
 
 const validateLastName = (blur) => {
-  if (loginData.value.lastName.length < 1) {
+  if (createData.value.lastName.length < 1) {
     if (blur) errors.value.lastName = 'Name must be at least 1 character'
   } else {
     errors.value.lastName = null
@@ -66,7 +69,7 @@ const validateLastName = (blur) => {
 }
 
 const validateEmail = (blur) => {
-  const email = loginData.value.email
+  const email = createData.value.email
 
   if (email.length < 1) {
     if (blur) errors.value.email = 'Email is required'
@@ -76,12 +79,9 @@ const validateEmail = (blur) => {
     errors.value.email = null
   }
 }
-/**
- * Confirm password validation function that checks if the password and confirm password fields match.
- * @param blur: boolean - If true, the function will display an error message if the passwords do not match.
- */
+
 const validateConfirmPassword = (blur) => {
-  if (loginData.value.password !== loginData.value.confirmPassword) {
+  if (createData.value.password !== createData.value.confirmPassword) {
     if (blur) errors.value.confirmPassword = 'Passwords do not match.'
   } else {
     errors.value.confirmPassword = null
@@ -89,7 +89,7 @@ const validateConfirmPassword = (blur) => {
 }
 
 const validatePassword = (blur) => {
-  const password = loginData.value.password
+  const password = createData.value.password
   const minLength = 8
   const hasUppercase = /[A-Z]/.test(password)
   const hasLowercase = /[a-z]/.test(password)
@@ -129,7 +129,7 @@ const validatePassword = (blur) => {
                 id="firstname"
                 @blur="() => validateFirstName(true)"
                 @input="() => validateFirstName(false)"
-                v-model="loginData.firstName"
+                v-model="createData.firstName"
               />
               <div v-if="errors.firstName" class="text-danger">{{ errors.firstName }}</div>
             </div>
@@ -141,7 +141,7 @@ const validatePassword = (blur) => {
                 id="lastname"
                 @blur="() => validateLastName(true)"
                 @input="() => validateLastName(false)"
-                v-model="loginData.lastName"
+                v-model="createData.lastName"
               />
               <div v-if="errors.lastName" class="text-danger">{{ errors.lastName }}</div>
             </div>
@@ -156,7 +156,7 @@ const validatePassword = (blur) => {
             id="email"
             @blur="() => validateEmail(true)"
             @input="() => validateEmail(false)"
-            v-model="loginData.email"
+            v-model="createData.email"
             />
             <div v-if="errors.email" class="text-danger">{{ errors.email }}</div>
             </div>
@@ -170,7 +170,7 @@ const validatePassword = (blur) => {
                 id="password"
                 @blur="() => validatePassword(true)"
                 @input="() => validatePassword(false)"
-                v-model="loginData.password"
+                v-model="createData.password"
               />
               <div v-if="errors.password" class="text-danger">{{ errors.password }}</div>
             </div>
@@ -180,7 +180,7 @@ const validatePassword = (blur) => {
                     type="password"
                     class="form-control"
                     id="confirm-password"
-                    v-model="loginData.confirmPassword"
+                    v-model="createData.confirmPassword"
                     @blur="() => validateConfirmPassword(true)"
                 />
                 <div v-if="errors.confirmPassword" class="text-danger">
@@ -189,7 +189,7 @@ const validatePassword = (blur) => {
             </div>
           </div>
           <div class="text-center">
-            <button type="submit" class="btn btn-primary me-2">Submit</button>
+            <button @click="register" class="btn btn-primary me-2">Submit</button>
           </div>
         </form>
       </div>
