@@ -1,12 +1,12 @@
 <script setup>
 import NavBar from '../components/NavBar.vue';
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
+import { useAuthStore } from '@/stores/auth'
+const authStore = useAuthStore()
 
-const submittedCards = ref(JSON.parse(localStorage.getItem('submittedCards')) || [])
 const WelcomeLabel = computed(() => {
-  if (submittedCards.value.length > 0) {
-    const currentUser = submittedCards.value[submittedCards.value.length - 1]
-    return `Welcome ${currentUser.firstName} ${currentUser.lastName}`
+  if (!authStore.isLoading && authStore.user) {
+    return `Welcome ${authStore.user.firstName} ${authStore.user.lastName}`
   }
   return 'Home Screen'
 })

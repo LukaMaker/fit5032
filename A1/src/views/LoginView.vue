@@ -14,20 +14,13 @@ const loginData = ref({
 
 const signIn = () => {
   signInWithEmailAndPassword(auth, loginData.value.email, loginData.value.password)
-  .then((data) => {
+  .then(() => {
     //set current user to logged in user
     
     router.push('/')
   }).catch((error) => {
     console.log(error.code);
   })
-}
-
-const clearForm = () => {
-  loginData.value = {
-    email: '',
-    password: ''
-  }
 }
 </script>
 
@@ -45,8 +38,6 @@ const clearForm = () => {
             type="text"
             class="form-control"
             id="email"
-            @blur="() => validateEmail(true)"
-            @input="() => validateEmail(false)"
             v-model="loginData.email"
             />
             </div>
@@ -58,8 +49,6 @@ const clearForm = () => {
                 type="password"
                 class="form-control"
                 id="password"
-                @blur="() => validatePassword(true)"
-                @input="() => validatePassword(false)"
                 v-model="loginData.password"
               />
             </div>
