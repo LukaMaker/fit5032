@@ -1,10 +1,56 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { useRouter } from 'vue-router'
+import { getAuth, signOut } from 'firebase/auth'
+import { useAuthStore } from '@/stores/auth'
 
-const submittedCards = ref(JSON.parse(localStorage.getItem('submittedCards')) || [])
-const isOpen = ref(false);
+const router = useRouter()
+const auth = getAuth()
+const authStore = useAuthStore()
 
-const loginLabel = computed(() => submittedCards.value.length > 0 ? 'Profile' : 'Login')
+const isOpen = ref(false)        
+const isDropdownOpen = ref(false)
+
+const initials = computed(() => {
+  const user = authStore.user
+  if (!user) return ''
+  const first = user.firstName?.[0] || ''
+  const last = user.lastName?.[0] || ''
+  return (first + last).toUpperCase()
+})
+
+const toggleDropdown = () => {
+  isDropdownOpen.value = !isDropdownOpen.value
+}
+
+const closeDropdown = () => {
+  isDropdownOpen.value = false
+}
+
+const logOut = async () => {
+  try {
+    await signOut(auth)
+    closeDropdown()
+    router.push('/login')
+  } catch (error) {
+    console.log(error.code)
+  }
+}
+
+// Close the dropdown when clicking anywhere outside it
+const dropdownRef = ref(null)
+const handleClickOutside = (event) => {
+  if (dropdownRef.value && !dropdownRef.value.contains(event.target)) {
+    isDropdownOpen.value = false
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 </script>
 
 <template>
@@ -26,7 +72,7 @@ const loginLabel = computed(() => submittedCards.value.length > 0 ? 'Profile' : 
           <span class="hamburger-line"></span>
         </button>
 
-        <ul class="nav nav-pills flex-nowrap nav-links d-none d-lg-flex">
+        <ul class="nav nav-pills flex-nowrap nav-links d-none d-lg-flex align-items-center">
           <li class="nav-item">
             <router-link to="/" class="nav-link text-nowrap" active-class="active">Home</router-link>
           </li>
@@ -39,8 +85,32 @@ const loginLabel = computed(() => submittedCards.value.length > 0 ? 'Profile' : 
           <li class="nav-item">
             <router-link to="/impact" class="nav-link text-nowrap" active-class="active">Impact</router-link>
           </li>
-          <li class="nav-item">
-            <router-link to="/login" class="nav-link text-nowrap" active-class="active">{{ loginLabel }}</router-link>
+
+          <!-- Logged out: show Login link -->
+          <li class="nav-item" v-if="!authStore.isLoggedIn">
+            <router-link to="/login" class="nav-link text-nowrap" active-class="active">Login</router-link>
+          </li>
+
+          <!-- Logged in: show initials avatar + dropdown -->
+          <li class="nav-item position-relative" v-else ref="dropdownRef">
+            <button class="avatar-btn" @click="toggleDropdown">
+              {{ initials }}
+            </button>
+
+            <ul v-if="isDropdownOpen" class="dropdown-menu-custom">
+              <li>
+                <router-link to="/profile" class="dropdown-item" @click="closeDropdown">Profile</router-link>
+              </li>
+              <li>
+                <router-link to="/donations" class="dropdown-item" @click="closeDropdown">Donations</router-link>
+              </li>
+              <li v-if="authStore.user.role === 'admin'">
+                <router-link to="/admin" class="dropdown-item" @click="closeDropdown">Admin</router-link>
+              </li>
+              <li>
+                <button class="dropdown-item dropdown-item-btn" @click="logOut">Sign Out</button>
+              </li>
+            </ul>
           </li>
         </ul>
       </div>
@@ -61,9 +131,25 @@ const loginLabel = computed(() => submittedCards.value.length > 0 ? 'Profile' : 
         <li class="nav-item">
           <router-link to="/impact" class="nav-link text-nowrap" active-class="active">Impact</router-link>
         </li>
-        <li class="nav-item">
-          <router-link to="/login" class="nav-link text-nowrap" active-class="active">{{ loginLabel }}</router-link>
+
+        <li class="nav-item" v-if="!authStore.isLoggedIn">
+          <router-link to="/login" class="nav-link text-nowrap" active-class="active">Login</router-link>
         </li>
+
+        <template v-else>
+          <li class="nav-item">
+            <router-link to="/profile" class="nav-link text-nowrap" active-class="active">Profile</router-link>
+          </li>
+          <li class="nav-item">
+            <router-link to="/donations" class="nav-link text-nowrap" active-class="active">Donations</router-link>
+          </li>
+          <li class="nav-item" v-if="authStore.user.role === 'admin'">
+            <router-link to="/admin" class="nav-link text-nowrap" active-class="active">Admin</router-link>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link text-nowrap logout-mobile-btn" @click="logOut">Sign Out</button>
+          </li>
+        </template>
       </ul>
     </header>
   </div>
@@ -107,5 +193,64 @@ const loginLabel = computed(() => submittedCards.value.length > 0 ? 'Profile' : 
   height: 3px;
   background-color: #333;
   border-radius: 2px;
+}
+
+.avatar-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background-color: #2e7d32;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.dropdown-menu-custom {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.5rem);
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  list-style: none;
+  padding: 0.5rem 0;
+  margin: 0;
+  min-width: 160px;
+  z-index: 1000;
+}
+
+.dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  color: #333;
+  text-decoration: none;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background-color: #f5f5f5;
+}
+
+.dropdown-item-btn {
+  color: #b3261e;
+}
+
+.logout-mobile-btn {
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  color: #b3261e;
 }
 </style>
