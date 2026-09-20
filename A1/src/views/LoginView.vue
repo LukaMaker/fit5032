@@ -2,7 +2,7 @@
 import NavBar from '../components/NavBar.vue';
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { auth, signInWithEmailAndPassword } from "firebase/auth"
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth"
 
 const router = useRouter()
 const auth = getAuth()
@@ -13,18 +13,14 @@ const loginData = ref({
 })
 
 const signIn = () => {
-  validateEmail(true)
-  validatePassword(true)
-  if (!errors.value.password && !errors.value.email) {
-    signInWithEmailAndPassword(auth, loginData.value.email, loginData.value.password)
-    .then((data) => {
-      //send new account into to database
-      
-      router.push('/')
-    }).catch((error) => {
-      console.log(error.code);
-    })
-  }
+  signInWithEmailAndPassword(auth, loginData.value.email, loginData.value.password)
+  .then((data) => {
+    //set current user to logged in user
+    
+    router.push('/')
+  }).catch((error) => {
+    console.log(error.code);
+  })
 }
 
 const clearForm = () => {
@@ -33,51 +29,10 @@ const clearForm = () => {
     password: ''
   }
 }
-
-const errors = ref({
-  email: null,
-  password: null
-})
-
-const validateEmail = (blur) => {
-  const email = loginData.value.email
-
-  if (email.length < 1) {
-    if (blur) errors.value.email = 'Email is required'
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    if (blur) errors.value.email = 'Please enter a valid email address'
-  } else {
-    errors.value.email = null
-  }
-}
-
-const validatePassword = (blur) => {
-  const password = loginData.value.password
-  const minLength = 8
-  const hasUppercase = /[A-Z]/.test(password)
-  const hasLowercase = /[a-z]/.test(password)
-  const hasNumber = /\d/.test(password)
-  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password)
-
-  if (password.length < minLength) {
-    if (blur) errors.value.password = `Password must be at least ${minLength} characters long.`
-  } else if (!hasUppercase) {
-    if (blur) errors.value.password = 'Password must contain at least one uppercase letter.'
-  } else if (!hasLowercase) {
-    if (blur) errors.value.password = 'Password must contain at least one lowercase letter.'
-  } else if (!hasNumber) {
-    if (blur) errors.value.password = 'Password must contain at least one number.'
-  } else if (!hasSpecialChar) {
-    if (blur) errors.value.password = 'Password must contain at least one special character.'
-  } else {
-    errors.value.password = null
-  }
-}
 </script>
 
 <template>
   <NavBar></NavBar>
-  <!-- 🗄️ W3. Library Registration Form -->
   <div class="container mt-5">
     <div class="row">
       <div class="col-md-8 offset-md-2">
@@ -94,7 +49,6 @@ const validatePassword = (blur) => {
             @input="() => validateEmail(false)"
             v-model="loginData.email"
             />
-            <div v-if="errors.email" class="text-danger">{{ errors.email }}</div>
             </div>
         </div>
         <div class="row mb-3">
@@ -108,7 +62,6 @@ const validatePassword = (blur) => {
                 @input="() => validatePassword(false)"
                 v-model="loginData.password"
               />
-              <div v-if="errors.password" class="text-danger">{{ errors.password }}</div>
             </div>
           </div>
           <div class="text-center">
