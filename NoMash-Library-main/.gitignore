@@ -28,3 +28,22 @@ coverage
 *.sw?
 
 *.tsbuildinfo
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Firebase local cache, emulator data and debug logs
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+firestore-debug.log
+ui-debug.log
+.runtimeconfig.json
+functions/node_modules/
+
+# AI assistant / agent tooling (not part of the app)
+.agents/
+.claude/
+skills-lock.json
