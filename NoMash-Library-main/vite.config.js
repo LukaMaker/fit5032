@@ -9,7 +9,7 @@ export default defineConfig({
   // GitHub Pages serves the site from /<repository-name>/.
   // GITHUB_PAGES is only set in the GitHub Actions workflow, so local dev
   // and the Cloudflare deployment keep using '/'.
-  base: process.env.GITHUB_PAGES === 'true' ? '/lboskovic-library/' : '/',
+  base: process.env.GITHUB_PAGES === 'true' ? '/fit5032/' : '/',
 
   plugins: [
     vue(),
