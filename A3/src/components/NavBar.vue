@@ -30,6 +30,7 @@ const closeDropdown = () => {
 const logOut = async () => {
   try {
     await signOut(auth)
+    authStore.clearUser()
     closeDropdown()
     router.push('/login')
   } catch (error) {
@@ -104,7 +105,7 @@ onBeforeUnmount(() => {
               <li>
                 <router-link to="/donations" class="dropdown-item" @click="closeDropdown">Donations</router-link>
               </li>
-              <li v-if="authStore.user.role === 'admin'">
+              <li v-if="authStore.isAdmin">
                 <router-link to="/admin" class="dropdown-item" @click="closeDropdown">Admin</router-link>
               </li>
               <li>
@@ -143,7 +144,7 @@ onBeforeUnmount(() => {
           <li class="nav-item">
             <router-link to="/donations" class="nav-link text-nowrap" active-class="active">Donations</router-link>
           </li>
-          <li class="nav-item" v-if="authStore.user.role === 'admin'">
+          <li class="nav-item" v-if="authStore.isAdmin">
             <router-link to="/admin" class="nav-link text-nowrap" active-class="active">Admin</router-link>
           </li>
           <li class="nav-item">

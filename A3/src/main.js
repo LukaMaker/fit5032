@@ -15,29 +15,39 @@ const app = createApp(App)
 const pinia = createPinia()
 
 app.use(pinia)
-app.use(router)
 
 const authStore = useAuthStore()
+let appMounted = false
 
 // Runs on page load and on login/logout, loading the user's Firestore profile into the store
 onAuthStateChanged(auth, async (firebaseUser) => {
   if (firebaseUser) {
-    const snap = await getDoc(doc(db, 'users', firebaseUser.uid))
+    try {
+      const snap = await getDoc(doc(db, 'users', firebaseUser.uid))
 
-    if (snap.exists()) {
-      authStore.setUser({
-        uid: firebaseUser.uid,
-        email: firebaseUser.email,
-        ...snap.data() // firstName, lastName, role, etc. from Firestore
-      })
-    } else if (authStore.user?.uid !== firebaseUser.uid) {
-      // Profile doc not created yet, so only store uid and email
+      if (snap.exists()) {
+        authStore.setUser({
+          uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          ...snap.data() // firstName, lastName, role, etc. from Firestore
+        })
+      } else if (authStore.user?.uid !== firebaseUser.uid) {
+        // Profile doc not created yet, so only store uid and email
+        authStore.setUser({ uid: firebaseUser.uid, email: firebaseUser.email })
+      }
+    } catch (error) {
+      console.error('Error loading user profile:', error)
       authStore.setUser({ uid: firebaseUser.uid, email: firebaseUser.email })
     }
   } else {
     authStore.clearUser()
   }
   authStore.isLoading = false
-})
 
-app.mount('#app')
+  // Start the router only once the login state is known, so route guards check the real user
+  if (!appMounted) {
+    app.use(router)
+    app.mount('#app')
+    appMounted = true
+  }
+})
