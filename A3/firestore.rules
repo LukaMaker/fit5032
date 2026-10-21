@@ -43,5 +43,23 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isAdmin();
     }
+
+    match /ratings/{ratingId} {
+      // Anyone can view ratings so the average is public
+      allow read: if true;
+
+      // Signed-in users can only save their own rating (id eventId_userId), 1 to 5 stars, for an existing event
+      allow create, update: if isSignedIn()
+        && request.resource.data.keys().hasOnly(['eventId', 'userId', 'stars', 'createdAt'])
+        && request.resource.data.eventId is string
+        && ratingId == request.resource.data.eventId + '_' + request.auth.uid
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.stars is int
+        && request.resource.data.stars >= 1
+        && request.resource.data.stars <= 5
+        && exists(/databases/$(database)/documents/events/$(request.resource.data.eventId));
+
+      allow delete: if false;
+    }
   }
 }
