@@ -1,0 +1,41 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Looks up the signed-in user's role in their users doc
+    function isAdmin() {
+      return isSignedIn()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isValidName(name) {
+      return name is string && name.size() > 0 && name.size() <= 50;
+    }
+
+    match /users/{userId} {
+      // Users can read their own profile, admins can read everyone's
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+
+      // Users can only create their own profile, and only with the 'user' role
+      allow create: if isSignedIn()
+        && request.auth.uid == userId
+        && request.resource.data.keys().hasOnly(['firstName', 'lastName', 'email', 'role', 'createdAt'])
+        && isValidName(request.resource.data.firstName)
+        && isValidName(request.resource.data.lastName)
+        && request.resource.data.email is string
+        && request.resource.data.role == 'user';
+
+      // Only admins can update a profile, and only its role
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role'])
+        && request.resource.data.role in ['user', 'admin'];
+
+      allow delete: if false;
+    }
+  }
+}

@@ -92,6 +92,8 @@ const register = async () => {
 const validateFirstName = (blur) => {
   if (createData.value.firstName.trim().length < 1) {
     if (blur) errors.value.firstName = 'First name is required'
+  } else if (createData.value.firstName.trim().length > 50) {
+    if (blur) errors.value.firstName = 'First name must be 50 characters or less'
   } else {
     errors.value.firstName = null
   }
@@ -100,6 +102,8 @@ const validateFirstName = (blur) => {
 const validateLastName = (blur) => {
   if (createData.value.lastName.trim().length < 1) {
     if (blur) errors.value.lastName = 'Last name is required'
+  } else if (createData.value.lastName.trim().length > 50) {
+    if (blur) errors.value.lastName = 'Last name must be 50 characters or less'
   } else {
     errors.value.lastName = null
   }
@@ -163,6 +167,7 @@ const validatePassword = (blur) => {
                 type="text"
                 class="form-control"
                 id="firstname"
+                maxlength="50"
                 @blur="() => validateFirstName(true)"
                 @input="() => validateFirstName(false)"
                 v-model="createData.firstName"
@@ -175,6 +180,7 @@ const validatePassword = (blur) => {
                 type="text"
                 class="form-control"
                 id="lastname"
+                maxlength="50"
                 @blur="() => validateLastName(true)"
                 @input="() => validateLastName(false)"
                 v-model="createData.lastName"
@@ -190,6 +196,7 @@ const validatePassword = (blur) => {
                 type="text"
                 class="form-control"
                 id="email"
+                maxlength="254"
                 @blur="() => validateEmail(true)"
                 @input="() => validateEmail(false)"
                 v-model="createData.email"
@@ -204,6 +211,7 @@ const validatePassword = (blur) => {
                 type="password"
                 class="form-control"
                 id="password"
+                maxlength="128"
                 @blur="() => validatePassword(true)"
                 @input="() => validatePassword(false)"
                 v-model="createData.password"
@@ -216,6 +224,7 @@ const validatePassword = (blur) => {
                 type="password"
                 class="form-control"
                 id="confirm-password"
+                maxlength="128"
                 v-model="createData.confirmPassword"
                 @blur="() => validateConfirmPassword(true)"
               />
