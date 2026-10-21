@@ -78,7 +78,7 @@ onBeforeUnmount(() => {
             <router-link to="/" class="nav-link text-nowrap" active-class="active">Home</router-link>
           </li>
           <li class="nav-item">
-            <router-link to="/discover" class="nav-link text-nowrap" active-class="active">Discover & learn</router-link>
+            <router-link to="/events" class="nav-link text-nowrap" active-class="active">Discover & learn</router-link>
           </li>
           <li class="nav-item">
             <router-link to="/get_involved" class="nav-link text-nowrap" active-class="active">Get involved</router-link>
@@ -124,7 +124,7 @@ onBeforeUnmount(() => {
           <router-link to="/" class="nav-link text-nowrap" active-class="active">Home</router-link>
         </li>
         <li class="nav-item">
-          <router-link to="/discover" class="nav-link text-nowrap" active-class="active">Discover & learn</router-link>
+          <router-link to="/events" class="nav-link text-nowrap" active-class="active">Discover & learn</router-link>
         </li>
         <li class="nav-item">
           <router-link to="/get_involved" class="nav-link text-nowrap" active-class="active">Get involved</router-link>

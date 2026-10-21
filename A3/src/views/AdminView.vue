@@ -1,9 +1,10 @@
 <script setup>
 import NavBar from '../components/NavBar.vue'
 import { ref, onMounted } from 'vue'
-import { collection, getDocs, doc, updateDoc } from 'firebase/firestore'
+import { collection, getDocs, doc, updateDoc, addDoc } from 'firebase/firestore'
 import { db } from '../firebase/init.js'
 import { useAuthStore } from '@/stores/auth'
+import sampleEvents from '@/assets/json/events.json'
 
 const authStore = useAuthStore()
 
@@ -40,6 +41,26 @@ const changeRole = async (user) => {
   }
 }
 
+// Adds the events from events.json to Firestore, only if there are no events yet
+const loadSampleEvents = async () => {
+  message.value = ''
+  error.value = ''
+  try {
+    const existing = await getDocs(collection(db, 'events'))
+    if (!existing.empty) {
+      error.value = 'Events have already been loaded.'
+      return
+    }
+    for (const event of sampleEvents) {
+      await addDoc(collection(db, 'events'), event)
+    }
+    message.value = `${sampleEvents.length} sample events loaded.`
+  } catch (err) {
+    console.error('Error loading sample events:', err)
+    error.value = 'Error loading sample events.'
+  }
+}
+
 onMounted(fetchUsers)
 </script>
 
@@ -48,9 +69,15 @@ onMounted(fetchUsers)
   <div class="container mt-5">
     <h1 class="text-center mb-4">Admin Dashboard</h1>
 
-    <h2 class="h4">Users</h2>
     <p v-if="message" class="alert alert-success">{{ message }}</p>
     <p v-if="error" class="alert alert-danger">{{ error }}</p>
+
+    <h2 class="h4">Events</h2>
+    <button type="button" class="btn btn-outline-success mb-4" @click="loadSampleEvents">
+      Load sample events
+    </button>
+
+    <h2 class="h4">Users</h2>
 
     <div class="table-responsive">
       <table class="table table-striped align-middle">

@@ -4,6 +4,7 @@ import LoginView from '../views/LoginView.vue'
 import CreateAccountView from '@/views/CreateAccountView.vue'
 import ProfileView from '@/views/ProfileView.vue'
 import AdminView from '@/views/AdminView.vue'
+import EventsView from '@/views/EventsView.vue'
 import { useAuthStore } from '@/stores/auth'
 
 const routes = [
@@ -23,6 +24,11 @@ const routes = [
     name: 'Create Account',
     component: CreateAccountView,
     meta: { guestOnly: true }
+  },
+  {
+    path: '/events',
+    name: 'Events',
+    component: EventsView
   },
   {
     path: '/profile',

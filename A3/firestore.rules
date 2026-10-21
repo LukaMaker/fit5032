@@ -37,5 +37,11 @@ service cloud.firestore {
 
       allow delete: if false;
     }
+
+    match /events/{eventId} {
+      // Anyone can view events, only admins can add or change them
+      allow read: if true;
+      allow write: if isAdmin();
+    }
   }
 }

@@ -1,0 +1,66 @@
+[
+  {
+    "title": "Frankston Foreshore Planting Day",
+    "suburb": "Frankston",
+    "date": "2026-03-14",
+    "description": "Planting coastal banksia and tea-tree along the foreshore to stabilise the dunes.",
+    "familyFriendly": true,
+    "treesPlanted": 2150
+  },
+  {
+    "title": "Sunshine North Street Trees",
+    "suburb": "Sunshine North",
+    "date": "2026-05-09",
+    "description": "Adding shade trees to residential streets with the lowest canopy cover in the west.",
+    "familyFriendly": true,
+    "treesPlanted": 1840
+  },
+  {
+    "title": "Merri Creek Revegetation",
+    "suburb": "Brunswick",
+    "date": "2026-06-20",
+    "description": "Restoring native grasses and river red gums along the creek banks. Some steep terrain.",
+    "familyFriendly": false,
+    "treesPlanted": 3120
+  },
+  {
+    "title": "Dandenong Creek Corridor",
+    "suburb": "Dandenong",
+    "date": "2026-08-01",
+    "description": "Building a wildlife corridor of indigenous shrubs and trees beside the creek trail.",
+    "familyFriendly": false,
+    "treesPlanted": 2560
+  },
+  {
+    "title": "Broadmeadows School Garden",
+    "suburb": "Broadmeadows",
+    "date": "2026-09-12",
+    "description": "Planting a fruit tree and pollinator garden with local primary school families.",
+    "familyFriendly": true,
+    "treesPlanted": 640
+  },
+  {
+    "title": "Footscray Park Canopy Project",
+    "suburb": "Footscray",
+    "date": "2026-11-07",
+    "description": "Replacing ageing park trees with heat-tolerant natives. Gloves and tools provided.",
+    "familyFriendly": true,
+    "treesPlanted": 0
+  },
+  {
+    "title": "Werribee River Bushland Day",
+    "suburb": "Werribee",
+    "date": "2026-11-28",
+    "description": "Weeding and replanting the river bushland. Bring sturdy boots and water.",
+    "familyFriendly": false,
+    "treesPlanted": 0
+  },
+  {
+    "title": "St Albans Community Orchard",
+    "suburb": "St Albans",
+    "date": "2026-12-12",
+    "description": "Starting a community orchard on council land. Morning tea provided for volunteers.",
+    "familyFriendly": true,
+    "treesPlanted": 0
+  }
+]
