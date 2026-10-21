@@ -84,14 +84,14 @@ onMounted(fetchUsers)
         <thead>
           <tr>
             <th>Name</th>
-            <th>Email</th>
+            <th class="d-none d-md-table-cell">Email</th>
             <th>Role</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="user in users" :key="user.id">
             <td>{{ user.firstName }} {{ user.lastName }}</td>
-            <td>{{ user.email }}</td>
+            <td class="d-none d-md-table-cell">{{ user.email }}</td>
             <td>
               <!-- Admins can't change their own role, so they can't lock themselves out -->
               <select

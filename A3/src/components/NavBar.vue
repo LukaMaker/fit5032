@@ -119,6 +119,7 @@ onBeforeUnmount(() => {
       <ul
         v-if="isOpen"
         class="nav nav-pills flex-column dropdown-nav d-lg-none"
+        @click="isOpen = false"
       >
         <li class="nav-item">
           <router-link to="/" class="nav-link text-nowrap" active-class="active">Home</router-link>

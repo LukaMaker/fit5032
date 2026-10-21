@@ -5,6 +5,7 @@ import CreateAccountView from '@/views/CreateAccountView.vue'
 import ProfileView from '@/views/ProfileView.vue'
 import AdminView from '@/views/AdminView.vue'
 import EventsView from '@/views/EventsView.vue'
+import ComingSoonView from '@/views/ComingSoonView.vue'
 import { useAuthStore } from '@/stores/auth'
 
 const routes = [
@@ -29,6 +30,24 @@ const routes = [
     path: '/events',
     name: 'Events',
     component: EventsView
+  },
+  {
+    path: '/get_involved',
+    name: 'Get Involved',
+    component: ComingSoonView,
+    meta: { title: 'Get Involved' }
+  },
+  {
+    path: '/impact',
+    name: 'Impact',
+    component: ComingSoonView,
+    meta: { title: 'Impact' }
+  },
+  {
+    path: '/donations',
+    name: 'Donations',
+    component: ComingSoonView,
+    meta: { title: 'My Donations', requiresAuth: true }
   },
   {
     path: '/profile',

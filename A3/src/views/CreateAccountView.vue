@@ -161,7 +161,7 @@ const validatePassword = (blur) => {
         <h1 class="text-center">Create Account</h1>
         <form @submit.prevent="register">
           <div class="row mb-3">
-            <div class="col-md-6 col-sm-6">
+            <div class="col-md-6 col-sm-6 mb-3 mb-sm-0">
               <label for="firstname" class="form-label">First Name</label>
               <input
                 type="text"
@@ -205,7 +205,7 @@ const validatePassword = (blur) => {
             </div>
           </div>
           <div class="row mb-3">
-            <div class="col-md-6 col-sm-6">
+            <div class="col-md-6 col-sm-6 mb-3 mb-sm-0">
               <label for="password" class="form-label">Password</label>
               <input
                 type="password"
