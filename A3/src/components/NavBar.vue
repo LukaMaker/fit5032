@@ -1,11 +1,11 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
-import { getAuth, signOut } from 'firebase/auth'
+import { signOut } from 'firebase/auth'
+import { auth } from '@/firebase/init.js'
 import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
-const auth = getAuth()
 const authStore = useAuthStore()
 
 const isOpen = ref(false)        

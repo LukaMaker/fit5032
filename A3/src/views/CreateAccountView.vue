@@ -1,13 +1,14 @@
 <script setup>
-import NavBar from '../components/NavBar.vue';
+import NavBar from '../components/NavBar.vue'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { getAuth, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
-import { getFirestore, doc, setDoc } from 'firebase/firestore'
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
+import { doc, setDoc } from 'firebase/firestore'
+import { auth, db } from '../firebase/init.js'
+import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
-const auth = getAuth()
-const db = getFirestore()
+const authStore = useAuthStore()
 
 const createData = ref({
   firstName: '',
@@ -17,49 +18,6 @@ const createData = ref({
   confirmPassword: ''
 })
 
-const register = async () => {
-  validateFirstName(true)
-  validateLastName(true)
-  validateEmail(true)
-  validatePassword(true)
-  validateConfirmPassword(true)
-  if (!errors.value.firstName && !errors.value.lastName && !errors.value.confirmPassword && !errors.value.password && !errors.value.email) {
-    try {
-    const { user } = await createUserWithEmailAndPassword(
-      auth,
-      createData.value.email,
-      createData.value.password
-    )
-
-    await updateProfile(user, {
-      displayName: `${createData.value.firstName}`
-    })
-
-    await setDoc(doc(db, 'users', user.uid), {
-      firstName: createData.value.firstName,
-      lastName: createData.value.lastName,
-      email: createData.value.email,
-      role: 'user', // default role
-      createdAt: new Date().toISOString()
-    })
-
-    router.push('/login')
-  } catch (error) {
-    console.log(error.code)
-  }
-  }
-}
-
-const clearForm = () => {
-  createData.value = {
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
-  }
-}
-
 const errors = ref({
   firstName: null,
   lastName: null,
@@ -68,18 +26,80 @@ const errors = ref({
   confirmPassword: null
 })
 
+const firebaseError = ref('')
+
+// Turns Firebase error codes into messages a user can understand
+const getFirebaseErrorMessage = (code) => {
+  switch (code) {
+    case 'auth/email-already-in-use':
+      return 'An account with this email already exists.'
+    case 'auth/invalid-email':
+      return 'Please enter a valid email address.'
+    case 'auth/weak-password':
+      return 'Password is too weak.'
+    case 'auth/network-request-failed':
+      return 'Network error. Check your connection and try again.'
+    default:
+      return 'Something went wrong. Please try again.'
+  }
+}
+
+const register = async () => {
+  firebaseError.value = ''
+  validateFirstName(true)
+  validateLastName(true)
+  validateEmail(true)
+  validatePassword(true)
+  validateConfirmPassword(true)
+  if (
+    !errors.value.firstName &&
+    !errors.value.lastName &&
+    !errors.value.confirmPassword &&
+    !errors.value.password &&
+    !errors.value.email
+  ) {
+    try {
+      const { user } = await createUserWithEmailAndPassword(
+        auth,
+        createData.value.email,
+        createData.value.password
+      )
+
+      await updateProfile(user, {
+        displayName: `${createData.value.firstName}`
+      })
+
+      const profile = {
+        firstName: createData.value.firstName.trim(),
+        lastName: createData.value.lastName.trim(),
+        email: createData.value.email,
+        role: 'user', // default role
+        createdAt: new Date().toISOString()
+      }
+
+      await setDoc(doc(db, 'users', user.uid), profile)
+
+      authStore.setUser({ uid: user.uid, ...profile })
+
+      router.push('/')
+    } catch (error) {
+      console.log(error.code)
+      firebaseError.value = getFirebaseErrorMessage(error.code)
+    }
+  }
+}
 
 const validateFirstName = (blur) => {
-  if (createData.value.firstName.length < 1) {
-    if (blur) errors.value.firstName = 'Name must be at least 1 character'
+  if (createData.value.firstName.trim().length < 1) {
+    if (blur) errors.value.firstName = 'First name is required'
   } else {
     errors.value.firstName = null
   }
 }
 
 const validateLastName = (blur) => {
-  if (createData.value.lastName.length < 1) {
-    if (blur) errors.value.lastName = 'Name must be at least 1 character'
+  if (createData.value.lastName.trim().length < 1) {
+    if (blur) errors.value.lastName = 'Last name is required'
   } else {
     errors.value.lastName = null
   }
@@ -131,7 +151,6 @@ const validatePassword = (blur) => {
 
 <template>
   <NavBar></NavBar>
-  <!-- 🗄️ W3. Library Registration Form -->
   <div class="container mt-5">
     <div class="row">
       <div class="col-md-8 offset-md-2">
@@ -139,7 +158,7 @@ const validatePassword = (blur) => {
         <form @submit.prevent="register">
           <div class="row mb-3">
             <div class="col-md-6 col-sm-6">
-              <label for="name" class="form-label">First Name</label>
+              <label for="firstname" class="form-label">First Name</label>
               <input
                 type="text"
                 class="form-control"
@@ -151,7 +170,7 @@ const validatePassword = (blur) => {
               <div v-if="errors.firstName" class="text-danger">{{ errors.firstName }}</div>
             </div>
             <div class="col-md-6 col-sm-6">
-              <label for="name" class="form-label">Last Name</label>
+              <label for="lastname" class="form-label">Last Name</label>
               <input
                 type="text"
                 class="form-control"
@@ -163,23 +182,23 @@ const validatePassword = (blur) => {
               <div v-if="errors.lastName" class="text-danger">{{ errors.lastName }}</div>
             </div>
           </div>
-          
+
           <div class="row mb-3">
             <div class="col">
-            <label for="name" class="form-label">Email</label>
-            <input
-            type="text"
-            class="form-control"
-            id="email"
-            @blur="() => validateEmail(true)"
-            @input="() => validateEmail(false)"
-            v-model="createData.email"
-            />
-            <div v-if="errors.email" class="text-danger">{{ errors.email }}</div>
+              <label for="email" class="form-label">Email</label>
+              <input
+                type="text"
+                class="form-control"
+                id="email"
+                @blur="() => validateEmail(true)"
+                @input="() => validateEmail(false)"
+                v-model="createData.email"
+              />
+              <div v-if="errors.email" class="text-danger">{{ errors.email }}</div>
             </div>
-        </div>
-        <div class="row mb-3">
-          <div class="col-md-6 col-sm-6">
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-6 col-sm-6">
               <label for="password" class="form-label">Password</label>
               <input
                 type="password"
@@ -192,19 +211,22 @@ const validatePassword = (blur) => {
               <div v-if="errors.password" class="text-danger">{{ errors.password }}</div>
             </div>
             <div class="col-md-6 col-sm-6">
-                <label for="confirm-password" class="form-label">Confirm password</label>
-                <input
-                    type="password"
-                    class="form-control"
-                    id="confirm-password"
-                    v-model="createData.confirmPassword"
-                    @blur="() => validateConfirmPassword(true)"
-                />
-                <div v-if="errors.confirmPassword" class="text-danger">
-                    {{ errors.confirmPassword }}
-                </div>
+              <label for="confirm-password" class="form-label">Confirm password</label>
+              <input
+                type="password"
+                class="form-control"
+                id="confirm-password"
+                v-model="createData.confirmPassword"
+                @blur="() => validateConfirmPassword(true)"
+              />
+              <div v-if="errors.confirmPassword" class="text-danger">
+                {{ errors.confirmPassword }}
+              </div>
             </div>
           </div>
+
+          <div v-if="firebaseError" class="alert alert-danger">{{ firebaseError }}</div>
+
           <div class="text-center">
             <button type="submit" class="btn btn-primary me-2">Submit</button>
           </div>
