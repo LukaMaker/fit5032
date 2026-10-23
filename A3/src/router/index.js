@@ -6,6 +6,7 @@ import ProfileView from '@/views/ProfileView.vue'
 import AdminView from '@/views/AdminView.vue'
 import EventsView from '@/views/EventsView.vue'
 import ComingSoonView from '@/views/ComingSoonView.vue'
+import ForgotPasswordView from '@/views/ForgotPasswordView.vue'
 import { useAuthStore } from '@/stores/auth'
 
 const routes = [
@@ -24,6 +25,12 @@ const routes = [
     path: '/create_account',
     name: 'Create Account',
     component: CreateAccountView,
+    meta: { guestOnly: true }
+  },
+  {
+    path: '/forgot_password',
+    name: 'Forgot Password',
+    component: ForgotPasswordView,
     meta: { guestOnly: true }
   },
   {
@@ -73,7 +80,8 @@ router.beforeEach((to) => {
   const authStore = useAuthStore()
 
   if (to.meta.requiresAuth && !authStore.isLoggedIn) {
-    return { name: 'Login' }
+    // Remember the page so Login can send the user back after signing in
+    return { name: 'Login', query: { redirect: to.fullPath } }
   }
   if (to.meta.requiresAdmin && !authStore.isAdmin) {
     return { name: 'Home' }

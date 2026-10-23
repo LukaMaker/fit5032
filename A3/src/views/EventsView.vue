@@ -180,7 +180,8 @@ onMounted(() => {
               </button>
             </div>
             <p v-else class="small mb-0">
-              <router-link to="/login">Log in</router-link> to rate this event
+              <router-link :to="{ name: 'Login', query: { redirect: '/events' } }">Log in</router-link>
+              to rate this event
             </p>
           </div>
         </div>

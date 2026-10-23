@@ -6,8 +6,7 @@ import App from './App.vue'
 import 'bootstrap/dist/css/bootstrap.min.css'
 
 import { onAuthStateChanged } from 'firebase/auth'
-import { doc, getDoc } from 'firebase/firestore'
-import { auth, db } from './firebase/init.js'
+import { auth } from './firebase/init.js'
 
 import { useAuthStore } from './stores/auth'
 
@@ -22,23 +21,7 @@ let appMounted = false
 // Runs on page load and on login/logout, loading the user's Firestore profile into the store
 onAuthStateChanged(auth, async (firebaseUser) => {
   if (firebaseUser) {
-    try {
-      const snap = await getDoc(doc(db, 'users', firebaseUser.uid))
-
-      if (snap.exists()) {
-        authStore.setUser({
-          uid: firebaseUser.uid,
-          email: firebaseUser.email,
-          ...snap.data() // firstName, lastName, role, etc. from Firestore
-        })
-      } else if (authStore.user?.uid !== firebaseUser.uid) {
-        // Profile doc not created yet, so only store uid and email
-        authStore.setUser({ uid: firebaseUser.uid, email: firebaseUser.email })
-      }
-    } catch (error) {
-      console.error('Error loading user profile:', error)
-      authStore.setUser({ uid: firebaseUser.uid, email: firebaseUser.email })
-    }
+    await authStore.loadUser(firebaseUser)
   } else {
     authStore.clearUser()
   }

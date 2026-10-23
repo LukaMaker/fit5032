@@ -1,11 +1,15 @@
 <script setup>
 import NavBar from '../components/NavBar.vue'
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { auth } from '../firebase/init.js'
+import { useAuthStore } from '@/stores/auth'
+import { getSafeRedirect } from '@/router/redirect.js'
 
 const router = useRouter()
+const route = useRoute()
+const authStore = useAuthStore()
 
 const loginData = ref({
   email: '',
@@ -18,6 +22,7 @@ const errors = ref({
 })
 
 const firebaseError = ref('')
+const showPassword = ref(false)
 
 // Turns Firebase error codes into messages a user can understand
 const getFirebaseErrorMessage = (code) => {
@@ -57,20 +62,25 @@ const validatePassword = (blur) => {
   }
 }
 
-const signIn = () => {
+const signIn = async () => {
   firebaseError.value = ''
   validateEmail(true)
   validatePassword(true)
   if (errors.value.email || errors.value.password) return
 
-  signInWithEmailAndPassword(auth, loginData.value.email, loginData.value.password)
-    .then(() => {
-      router.push('/')
-    })
-    .catch((error) => {
-      console.log(error.code)
-      firebaseError.value = getFirebaseErrorMessage(error.code)
-    })
+  try {
+    const { user } = await signInWithEmailAndPassword(
+      auth,
+      loginData.value.email,
+      loginData.value.password
+    )
+    // Load the profile before redirecting, so route guards see the logged-in user and their role
+    await authStore.loadUser(user)
+    router.push(getSafeRedirect(route.query))
+  } catch (error) {
+    console.log(error.code)
+    firebaseError.value = getFirebaseErrorMessage(error.code)
+  }
 }
 </script>
 
@@ -80,15 +90,16 @@ const signIn = () => {
     <div class="row">
       <div class="col-md-8 offset-md-2">
         <h1 class="text-center">Log In</h1>
-        <form @submit.prevent="signIn">
+        <form @submit.prevent="signIn" novalidate>
           <div class="row mb-3">
             <div class="col">
               <label for="email" class="form-label">Email</label>
               <input
-                type="text"
+                type="email"
                 class="form-control"
                 id="email"
                 maxlength="254"
+                autocomplete="email"
                 @blur="() => validateEmail(true)"
                 @input="() => validateEmail(false)"
                 v-model="loginData.email"
@@ -99,16 +110,30 @@ const signIn = () => {
           <div class="row mb-3">
             <div class="col">
               <label for="password" class="form-label">Password</label>
-              <input
-                type="password"
-                class="form-control"
-                id="password"
-                maxlength="128"
-                @blur="() => validatePassword(true)"
-                @input="() => validatePassword(false)"
-                v-model="loginData.password"
-              />
+              <div class="input-group">
+                <input
+                  :type="showPassword ? 'text' : 'password'"
+                  class="form-control"
+                  id="password"
+                  maxlength="128"
+                  autocomplete="current-password"
+                  @blur="() => validatePassword(true)"
+                  @input="() => validatePassword(false)"
+                  v-model="loginData.password"
+                />
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  :aria-label="showPassword ? 'Hide password' : 'Show password'"
+                  @click="showPassword = !showPassword"
+                >
+                  {{ showPassword ? 'Hide' : 'Show' }}
+                </button>
+              </div>
               <div v-if="errors.password" class="text-danger">{{ errors.password }}</div>
+              <div class="mt-1 text-end">
+                <router-link to="/forgot_password" class="small">Forgot password?</router-link>
+              </div>
             </div>
           </div>
 
@@ -121,7 +146,9 @@ const signIn = () => {
           <div class="row mb-3 mt-3">
             <p>
               Don't have an account?
-              <router-link to="/create_account" active-class="active">Create Account</router-link>
+              <router-link :to="{ name: 'Create Account', query: route.query }">
+                Create Account
+              </router-link>
             </p>
           </div>
         </form>

@@ -1,13 +1,15 @@
 <script setup>
 import NavBar from '../components/NavBar.vue'
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
 import { doc, setDoc } from 'firebase/firestore'
 import { auth, db } from '../firebase/init.js'
 import { useAuthStore } from '@/stores/auth'
+import { getSafeRedirect } from '@/router/redirect.js'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 
 const createData = ref({
@@ -27,6 +29,7 @@ const errors = ref({
 })
 
 const firebaseError = ref('')
+const showPassword = ref(false)
 
 // Turns Firebase error codes into messages a user can understand
 const getFirebaseErrorMessage = (code) => {
@@ -81,7 +84,7 @@ const register = async () => {
 
       authStore.setUser({ uid: user.uid, ...profile })
 
-      router.push('/')
+      router.push(getSafeRedirect(route.query))
     } catch (error) {
       console.log(error.code)
       firebaseError.value = getFirebaseErrorMessage(error.code)
@@ -159,7 +162,7 @@ const validatePassword = (blur) => {
     <div class="row">
       <div class="col-md-8 offset-md-2">
         <h1 class="text-center">Create Account</h1>
-        <form @submit.prevent="register">
+        <form @submit.prevent="register" novalidate>
           <div class="row mb-3">
             <div class="col-md-6 col-sm-6 mb-3 mb-sm-0">
               <label for="firstname" class="form-label">First Name</label>
@@ -167,6 +170,7 @@ const validatePassword = (blur) => {
                 type="text"
                 class="form-control"
                 id="firstname"
+                autocomplete="given-name"
                 maxlength="50"
                 @blur="() => validateFirstName(true)"
                 @input="() => validateFirstName(false)"
@@ -180,6 +184,7 @@ const validatePassword = (blur) => {
                 type="text"
                 class="form-control"
                 id="lastname"
+                autocomplete="family-name"
                 maxlength="50"
                 @blur="() => validateLastName(true)"
                 @input="() => validateLastName(false)"
@@ -193,9 +198,10 @@ const validatePassword = (blur) => {
             <div class="col">
               <label for="email" class="form-label">Email</label>
               <input
-                type="text"
+                type="email"
                 class="form-control"
                 id="email"
+                autocomplete="email"
                 maxlength="254"
                 @blur="() => validateEmail(true)"
                 @input="() => validateEmail(false)"
@@ -207,23 +213,40 @@ const validatePassword = (blur) => {
           <div class="row mb-3">
             <div class="col-md-6 col-sm-6 mb-3 mb-sm-0">
               <label for="password" class="form-label">Password</label>
-              <input
-                type="password"
-                class="form-control"
-                id="password"
-                maxlength="128"
-                @blur="() => validatePassword(true)"
-                @input="() => validatePassword(false)"
-                v-model="createData.password"
-              />
+              <div class="input-group">
+                <input
+                  :type="showPassword ? 'text' : 'password'"
+                  class="form-control"
+                  id="password"
+                  maxlength="128"
+                  autocomplete="new-password"
+                  aria-describedby="password-help"
+                  @blur="() => validatePassword(true)"
+                  @input="() => validatePassword(false)"
+                  v-model="createData.password"
+                />
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  :aria-label="showPassword ? 'Hide passwords' : 'Show passwords'"
+                  @click="showPassword = !showPassword"
+                >
+                  {{ showPassword ? 'Hide' : 'Show' }}
+                </button>
+              </div>
+              <div id="password-help" class="form-text">
+                At least 8 characters, with upper and lower case letters, a number and a special
+                character.
+              </div>
               <div v-if="errors.password" class="text-danger">{{ errors.password }}</div>
             </div>
             <div class="col-md-6 col-sm-6">
               <label for="confirm-password" class="form-label">Confirm password</label>
               <input
-                type="password"
+                :type="showPassword ? 'text' : 'password'"
                 class="form-control"
                 id="confirm-password"
+                autocomplete="new-password"
                 maxlength="128"
                 v-model="createData.confirmPassword"
                 @blur="() => validateConfirmPassword(true)"
@@ -239,6 +262,11 @@ const validatePassword = (blur) => {
           <div class="text-center">
             <button type="submit" class="btn btn-primary me-2">Submit</button>
           </div>
+
+          <p class="mt-3">
+            Already have an account?
+            <router-link :to="{ name: 'Login', query: route.query }">Log in</router-link>
+          </p>
         </form>
       </div>
     </div>
