@@ -5,6 +5,8 @@ import { collection, getDocs, doc, updateDoc, addDoc } from 'firebase/firestore'
 import { db } from '../firebase/init.js'
 import { useAuthStore } from '@/stores/auth'
 import sampleEvents from '@/assets/json/events.json'
+import sampleResources from '@/assets/json/resources.json'
+import sampleDonors from '@/assets/json/donors.json'
 
 const authStore = useAuthStore()
 
@@ -41,23 +43,23 @@ const changeRole = async (user) => {
   }
 }
 
-// Adds the events from events.json to Firestore, only if there are no events yet
-const loadSampleEvents = async () => {
+// Adds sample items from a JSON file to a Firestore collection, only if the collection is empty
+const loadSampleData = async (collectionName, items) => {
   message.value = ''
   error.value = ''
   try {
-    const existing = await getDocs(collection(db, 'events'))
+    const existing = await getDocs(collection(db, collectionName))
     if (!existing.empty) {
-      error.value = 'Events have already been loaded.'
+      error.value = `Sample ${collectionName} have already been loaded.`
       return
     }
-    for (const event of sampleEvents) {
-      await addDoc(collection(db, 'events'), event)
+    for (const item of items) {
+      await addDoc(collection(db, collectionName), item)
     }
-    message.value = `${sampleEvents.length} sample events loaded.`
+    message.value = `${items.length} sample ${collectionName} loaded.`
   } catch (err) {
-    console.error('Error loading sample events:', err)
-    error.value = 'Error loading sample events.'
+    console.error(`Error loading sample ${collectionName}:`, err)
+    error.value = `Error loading sample ${collectionName}.`
   }
 }
 
@@ -72,10 +74,22 @@ onMounted(fetchUsers)
     <p v-if="message" class="alert alert-success">{{ message }}</p>
     <p v-if="error" class="alert alert-danger">{{ error }}</p>
 
-    <h2 class="h4">Events</h2>
-    <button type="button" class="btn btn-outline-success mb-4" @click="loadSampleEvents">
-      Load sample events
-    </button>
+    <h2 class="h4">Sample data</h2>
+    <div class="d-flex flex-wrap gap-2 mb-4">
+      <button type="button" class="btn btn-outline-success" @click="loadSampleData('events', sampleEvents)">
+        Load sample events
+      </button>
+      <button
+        type="button"
+        class="btn btn-outline-success"
+        @click="loadSampleData('resources', sampleResources)"
+      >
+        Load sample resources
+      </button>
+      <button type="button" class="btn btn-outline-success" @click="loadSampleData('donors', sampleDonors)">
+        Load sample donors
+      </button>
+    </div>
 
     <h2 class="h4">Users</h2>
 

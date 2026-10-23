@@ -1,15 +1,43 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { signOut } from 'firebase/auth'
 import { auth } from '@/firebase/init.js'
 import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 
-const isOpen = ref(false)        
+const isOpen = ref(false)
 const isDropdownOpen = ref(false)
+
+// Links shown under each nav dropdown (desktop) or heading (mobile menu)
+const menus = [
+  {
+    id: 'discover',
+    label: 'Discover & learn',
+    links: [
+      { to: '/events', label: 'Events' },
+      { to: '/resources', label: 'Resource Library' }
+    ]
+  },
+  {
+    id: 'involved',
+    label: 'Get involved',
+    links: [{ to: '/leaderboard', label: 'Donor Leaderboard' }]
+  }
+]
+
+// id of the nav dropdown that is open, or null when none are
+const openMenu = ref(null)
+
+const toggleMenu = (id) => {
+  openMenu.value = openMenu.value === id ? null : id
+}
+
+// Highlights a dropdown button when the current page is one of its links
+const isMenuActive = (menu) => menu.links.some((link) => link.to === route.path)
 
 const initials = computed(() => {
   const user = authStore.user
@@ -38,19 +66,32 @@ const logOut = async () => {
   }
 }
 
-// Close the dropdown when clicking anywhere outside it
+// Close the dropdowns when clicking anywhere outside them
 const dropdownRef = ref(null)
 const handleClickOutside = (event) => {
   if (dropdownRef.value && !dropdownRef.value.contains(event.target)) {
+    isDropdownOpen.value = false
+  }
+  if (!event.target.closest('.nav-dropdown')) {
+    openMenu.value = null
+  }
+}
+
+// Close the dropdowns when Escape is pressed
+const handleKeydown = (event) => {
+  if (event.key === 'Escape') {
+    openMenu.value = null
     isDropdownOpen.value = false
   }
 }
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
+  document.addEventListener('keydown', handleKeydown)
 })
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
+  document.removeEventListener('keydown', handleKeydown)
 })
 </script>
 
@@ -77,12 +118,28 @@ onBeforeUnmount(() => {
           <li class="nav-item">
             <router-link to="/" class="nav-link text-nowrap" active-class="active">Home</router-link>
           </li>
-          <li class="nav-item">
-            <router-link to="/events" class="nav-link text-nowrap" active-class="active">Discover & learn</router-link>
+
+          <!-- Nav dropdowns (Discover & learn, Get involved) -->
+          <li v-for="menu in menus" :key="menu.id" class="nav-item position-relative nav-dropdown">
+            <button
+              type="button"
+              class="nav-link text-nowrap"
+              :class="{ active: isMenuActive(menu) }"
+              :aria-expanded="openMenu === menu.id"
+              :aria-controls="`menu-${menu.id}`"
+              @click="toggleMenu(menu.id)"
+            >
+              {{ menu.label }} <span aria-hidden="true">▾</span>
+            </button>
+            <ul v-if="openMenu === menu.id" :id="`menu-${menu.id}`" class="dropdown-menu-custom dropdown-menu-left">
+              <li v-for="link in menu.links" :key="link.to">
+                <router-link :to="link.to" class="dropdown-item" @click="openMenu = null">
+                  {{ link.label }}
+                </router-link>
+              </li>
+            </ul>
           </li>
-          <li class="nav-item">
-            <router-link to="/get_involved" class="nav-link text-nowrap" active-class="active">Get involved</router-link>
-          </li>
+
           <li class="nav-item">
             <router-link to="/impact" class="nav-link text-nowrap" active-class="active">Impact</router-link>
           </li>
@@ -124,12 +181,19 @@ onBeforeUnmount(() => {
         <li class="nav-item">
           <router-link to="/" class="nav-link text-nowrap" active-class="active">Home</router-link>
         </li>
-        <li class="nav-item">
-          <router-link to="/events" class="nav-link text-nowrap" active-class="active">Discover & learn</router-link>
+
+        <!-- Mobile: each dropdown becomes a heading with its links indented below -->
+        <li v-for="menu in menus" :key="menu.id" class="nav-item">
+          <span class="nav-link text-nowrap mobile-menu-heading">{{ menu.label }}</span>
+          <ul class="nav nav-pills flex-column ps-3">
+            <li v-for="link in menu.links" :key="link.to" class="nav-item">
+              <router-link :to="link.to" class="nav-link text-nowrap" active-class="active">
+                {{ link.label }}
+              </router-link>
+            </li>
+          </ul>
         </li>
-        <li class="nav-item">
-          <router-link to="/get_involved" class="nav-link text-nowrap" active-class="active">Get involved</router-link>
-        </li>
+
         <li class="nav-item">
           <router-link to="/impact" class="nav-link text-nowrap" active-class="active">Impact</router-link>
         </li>
@@ -156,7 +220,6 @@ onBeforeUnmount(() => {
     </header>
   </div>
 </template>
-
 
 <style scoped>
 .navbar-header {
@@ -225,6 +288,18 @@ onBeforeUnmount(() => {
   margin: 0;
   min-width: 160px;
   z-index: 1000;
+}
+
+.dropdown-menu-left {
+  left: 0;
+  right: auto;
+  min-width: 190px;
+}
+
+.mobile-menu-heading {
+  color: #555;
+  font-weight: 600;
+  cursor: default;
 }
 
 .dropdown-item {

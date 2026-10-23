@@ -7,6 +7,8 @@ import AdminView from '@/views/AdminView.vue'
 import EventsView from '@/views/EventsView.vue'
 import ComingSoonView from '@/views/ComingSoonView.vue'
 import ForgotPasswordView from '@/views/ForgotPasswordView.vue'
+import ResourcesView from '@/views/ResourcesView.vue'
+import LeaderboardView from '@/views/LeaderboardView.vue'
 import { useAuthStore } from '@/stores/auth'
 
 const routes = [
@@ -37,6 +39,16 @@ const routes = [
     path: '/events',
     name: 'Events',
     component: EventsView
+  },
+  {
+    path: '/resources',
+    name: 'Resources',
+    component: ResourcesView
+  },
+  {
+    path: '/leaderboard',
+    name: 'Leaderboard',
+    component: LeaderboardView
   },
   {
     path: '/get_involved',

@@ -44,6 +44,18 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    match /resources/{resourceId} {
+      // Anyone can view the resource library, only admins can add or change it
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /donors/{donorId} {
+      // Anyone can view the leaderboard, only admins can add or change it
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     match /ratings/{ratingId} {
       // Anyone can view ratings so the average is public
       allow read: if true;

@@ -5,6 +5,9 @@ import App from './App.vue'
 
 import 'bootstrap/dist/css/bootstrap.min.css'
 
+import PrimeVue from 'primevue/config'
+import Aura from '@primevue/themes/aura'
+
 import { onAuthStateChanged } from 'firebase/auth'
 import { auth } from './firebase/init.js'
 
@@ -14,6 +17,7 @@ const app = createApp(App)
 const pinia = createPinia()
 
 app.use(pinia)
+app.use(PrimeVue, { theme: { preset: Aura } })
 
 const authStore = useAuthStore()
 let appMounted = false
