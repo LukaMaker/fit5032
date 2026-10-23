@@ -9,6 +9,8 @@ import ComingSoonView from '@/views/ComingSoonView.vue'
 import ForgotPasswordView from '@/views/ForgotPasswordView.vue'
 import ResourcesView from '@/views/ResourcesView.vue'
 import LeaderboardView from '@/views/LeaderboardView.vue'
+import DonateView from '@/views/DonateView.vue'
+import DonationsView from '@/views/DonationsView.vue'
 import { useAuthStore } from '@/stores/auth'
 
 const routes = [
@@ -63,10 +65,16 @@ const routes = [
     meta: { title: 'Impact' }
   },
   {
+    path: '/donate',
+    name: 'Donate',
+    component: DonateView,
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/donations',
     name: 'Donations',
-    component: ComingSoonView,
-    meta: { title: 'My Donations', requiresAuth: true }
+    component: DonationsView,
+    meta: { requiresAuth: true }
   },
   {
     path: '/profile',

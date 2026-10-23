@@ -72,6 +72,7 @@ onMounted(fetchEvents)
         </div>
 
         <div class="text-center mt-4">
+          <router-link to="/donate" class="btn btn-success me-2">Donate now</router-link>
           <router-link to="/events" class="btn btn-outline-success">Find an event</router-link>
         </div>
       </div>

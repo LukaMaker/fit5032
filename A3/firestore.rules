@@ -56,6 +56,29 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    match /donations/{donationId} {
+      // Donors can see their own donations, admins can see all of them
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+
+      // Signed-in users can only create a donation for themselves, sent to their own login email,
+      // for a whole-dollar amount from $2 to $10,000. The Cloud Function does the rest.
+      allow create: if isSignedIn()
+        && request.resource.data.keys().hasOnly(['userId', 'email', 'amount', 'showOnLeaderboard', 'suburb', 'status', 'createdAt'])
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.amount is int
+        && request.resource.data.amount >= 2
+        && request.resource.data.amount <= 10000
+        && request.resource.data.showOnLeaderboard is bool
+        && request.resource.data.suburb is string
+        && request.resource.data.suburb.size() <= 50
+        && request.resource.data.status == 'pending'
+        && request.resource.data.createdAt == request.time;
+
+      // Only the Cloud Function (which has admin access) can change a donation
+      allow update, delete: if false;
+    }
+
     match /ratings/{ratingId} {
       // Anyone can view ratings so the average is public
       allow read: if true;

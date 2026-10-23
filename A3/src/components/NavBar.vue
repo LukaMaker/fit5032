@@ -25,7 +25,10 @@ const menus = [
   {
     id: 'involved',
     label: 'Get involved',
-    links: [{ to: '/leaderboard', label: 'Donor Leaderboard' }]
+    links: [
+      { to: '/donate', label: 'Donate' },
+      { to: '/leaderboard', label: 'Donor Leaderboard' }
+    ]
   }
 ]
 
