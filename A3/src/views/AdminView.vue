@@ -7,6 +7,7 @@ import { useAuthStore } from '@/stores/auth'
 import sampleEvents from '@/assets/json/events.json'
 import sampleResources from '@/assets/json/resources.json'
 import sampleDonors from '@/assets/json/donors.json'
+import { exportToCsv, exportToPdf, datedFilename } from '@/utils/exportData.js'
 
 const authStore = useAuthStore()
 
@@ -63,6 +64,36 @@ const loadSampleData = async (collectionName, items) => {
   }
 }
 
+const userExportColumns = [
+  { header: 'First name', value: (user) => user.firstName },
+  { header: 'Last name', value: (user) => user.lastName },
+  { header: 'Email', value: (user) => user.email },
+  { header: 'Role', value: (user) => user.role },
+  {
+    header: 'Joined',
+    value: (user) => (user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-AU') : '')
+  }
+]
+
+const exportUsersCsv = () => {
+  exportToCsv(datedFilename('users', 'csv'), userExportColumns, users.value)
+}
+
+const exportUsersPdf = async () => {
+  try {
+    await exportToPdf(
+      datedFilename('users', 'pdf'),
+      'Tree World - Users',
+      userExportColumns,
+      users.value,
+      'All registered users'
+    )
+  } catch (err) {
+    console.error('Error exporting PDF:', err)
+    error.value = 'Error creating the PDF. Please try again.'
+  }
+}
+
 onMounted(fetchUsers)
 </script>
 
@@ -91,7 +122,27 @@ onMounted(fetchUsers)
       </button>
     </div>
 
-    <h2 class="h4">Users</h2>
+    <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-2">
+      <h2 class="h4 mb-0">Users</h2>
+      <div class="d-flex gap-2">
+        <button
+          type="button"
+          class="btn btn-outline-success btn-sm"
+          :disabled="users.length === 0"
+          @click="exportUsersCsv"
+        >
+          Export CSV
+        </button>
+        <button
+          type="button"
+          class="btn btn-outline-success btn-sm"
+          :disabled="users.length === 0"
+          @click="exportUsersPdf"
+        >
+          Export PDF
+        </button>
+      </div>
+    </div>
 
     <div class="table-responsive">
       <table class="table table-striped align-middle">

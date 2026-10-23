@@ -6,6 +6,7 @@ import { db } from '../firebase/init.js'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import { FilterMatchMode } from '@primevue/core/api'
+import { exportToCsv, exportToPdf, datedFilename, describeFilters } from '@/utils/exportData.js'
 
 const donors = ref([])
 const isLoading = ref(true)
@@ -25,6 +26,49 @@ const filters = ref(defaultFilters())
 
 const clearFilters = () => {
   filters.value = defaultFilters()
+}
+
+const dataTable = ref(null)
+// Number of rows matching the current filters, updated by the table's value-change event
+const matchingCount = ref(0)
+
+const exportColumns = [
+  { header: 'Rank', value: (row) => row.rank },
+  { header: 'Donor', value: (row) => row.name },
+  { header: 'Suburb', value: (row) => row.suburb },
+  { header: 'Total donated (AUD)', value: (row) => row.totalDonated },
+  { header: 'Donations', value: (row) => row.donationCount },
+  { header: 'Last donation', value: (row) => row.lastDonationLabel }
+]
+const filterLabels = {
+  rank: 'Rank',
+  name: 'Donor',
+  suburb: 'Suburb',
+  totalDonated: 'Total donated',
+  donationCount: 'Donations',
+  lastDonationLabel: 'Last donation'
+}
+
+// The table's filtered and sorted rows across every page, not just the 10 on screen
+const getExportRows = () => dataTable.value.processedData
+
+const exportCsv = () => {
+  exportToCsv(datedFilename('donor-leaderboard', 'csv'), exportColumns, getExportRows())
+}
+
+const exportPdf = async () => {
+  try {
+    await exportToPdf(
+      datedFilename('donor-leaderboard', 'pdf'),
+      'Tree World - Donor Leaderboard',
+      exportColumns,
+      getExportRows(),
+      describeFilters(filters.value, filterLabels)
+    )
+  } catch (err) {
+    console.error('Error exporting PDF:', err)
+    error.value = 'Error creating the PDF. Please try again.'
+  }
 }
 
 const formatDate = (date) => {
@@ -73,7 +117,9 @@ onMounted(fetchDonors)
     <p v-if="error" class="alert alert-danger">{{ error }}</p>
 
     <DataTable
+      ref="dataTable"
       v-model:filters="filters"
+      @value-change="(rows) => (matchingCount = rows.length)"
       :value="donors"
       dataKey="id"
       :loading="isLoading"
@@ -98,9 +144,28 @@ onMounted(fetchDonors)
             placeholder="Search all columns"
             aria-label="Search all columns"
           />
-          <button type="button" class="btn btn-outline-secondary btn-sm" @click="clearFilters">
-            Clear filters
-          </button>
+          <div class="d-flex flex-wrap gap-2 align-items-center">
+            <span v-if="!isLoading && matchingCount === 0" class="small text-muted">No rows to export</span>
+            <button type="button" class="btn btn-outline-secondary btn-sm" @click="clearFilters">
+              Clear filters
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-success btn-sm"
+              :disabled="matchingCount === 0"
+              @click="exportCsv"
+            >
+              Export CSV
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-success btn-sm"
+              :disabled="matchingCount === 0"
+              @click="exportPdf"
+            >
+              Export PDF
+            </button>
+          </div>
         </div>
       </template>
       <template #empty>No donors match your search.</template>

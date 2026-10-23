@@ -6,6 +6,7 @@ import { db } from '../firebase/init.js'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import { FilterMatchMode } from '@primevue/core/api'
+import { exportToCsv, exportToPdf, datedFilename, describeFilters } from '@/utils/exportData.js'
 
 const resources = ref([])
 const isLoading = ref(true)
@@ -27,6 +28,47 @@ const filters = ref(defaultFilters())
 
 const clearFilters = () => {
   filters.value = defaultFilters()
+}
+
+const dataTable = ref(null)
+// Number of rows matching the current filters, updated by the table's value-change event
+const matchingCount = ref(0)
+
+const exportColumns = [
+  { header: 'Title', value: (row) => row.title },
+  { header: 'Category', value: (row) => row.category },
+  { header: 'Type', value: (row) => row.type },
+  { header: 'Audience', value: (row) => row.audience },
+  { header: 'Published', value: (row) => row.publishedLabel }
+]
+const filterLabels = {
+  title: 'Title',
+  category: 'Category',
+  type: 'Type',
+  audience: 'Audience',
+  publishedLabel: 'Published'
+}
+
+// The table's filtered and sorted rows across every page, not just the 10 on screen
+const getExportRows = () => dataTable.value.processedData
+
+const exportCsv = () => {
+  exportToCsv(datedFilename('resources', 'csv'), exportColumns, getExportRows())
+}
+
+const exportPdf = async () => {
+  try {
+    await exportToPdf(
+      datedFilename('resources', 'pdf'),
+      'Tree World - Resource Library',
+      exportColumns,
+      getExportRows(),
+      describeFilters(filters.value, filterLabels)
+    )
+  } catch (err) {
+    console.error('Error exporting PDF:', err)
+    error.value = 'Error creating the PDF. Please try again.'
+  }
 }
 
 const formatDate = (date) => {
@@ -64,7 +106,9 @@ onMounted(fetchResources)
     <p v-if="error" class="alert alert-danger">{{ error }}</p>
 
     <DataTable
+      ref="dataTable"
       v-model:filters="filters"
+      @value-change="(rows) => (matchingCount = rows.length)"
       :value="resources"
       dataKey="id"
       :loading="isLoading"
@@ -89,9 +133,28 @@ onMounted(fetchResources)
             placeholder="Search all columns"
             aria-label="Search all columns"
           />
-          <button type="button" class="btn btn-outline-secondary btn-sm" @click="clearFilters">
-            Clear filters
-          </button>
+          <div class="d-flex flex-wrap gap-2 align-items-center">
+            <span v-if="!isLoading && matchingCount === 0" class="small text-muted">No rows to export</span>
+            <button type="button" class="btn btn-outline-secondary btn-sm" @click="clearFilters">
+              Clear filters
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-success btn-sm"
+              :disabled="matchingCount === 0"
+              @click="exportCsv"
+            >
+              Export CSV
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-success btn-sm"
+              :disabled="matchingCount === 0"
+              @click="exportPdf"
+            >
+              Export PDF
+            </button>
+          </div>
         </div>
       </template>
       <template #empty>No resources match your search.</template>
