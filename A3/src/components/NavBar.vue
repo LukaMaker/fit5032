@@ -27,6 +27,7 @@ const menus = [
     id: 'involved',
     label: 'Get involved',
     links: [
+      { to: '/book', label: 'Book a site visit' },
       { to: '/donate', label: 'Donate' },
       { to: '/leaderboard', label: 'Donor Leaderboard' }
     ]

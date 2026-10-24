@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase/app'
 import { getAuth } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
+import { getFunctions } from 'firebase/functions'
 
 const firebaseConfig = {
   apiKey: 'AIzaSyDp3C5-i0GnW0ODonpv-Vx81h8Bt2I2PLg',
@@ -15,3 +16,5 @@ const firebaseApp = initializeApp(firebaseConfig)
 
 export const auth = getAuth(firebaseApp)
 export const db = getFirestore(firebaseApp)
+// Callable Cloud Functions run in the same region as the Firestore database
+export const functions = getFunctions(firebaseApp, 'australia-southeast2')

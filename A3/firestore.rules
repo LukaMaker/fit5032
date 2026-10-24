@@ -79,6 +79,42 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    match /bookings/{bookingId} {
+      // Signed-in users can see which slots are taken
+      allow read: if isSignedIn();
+
+      // The id is siteId_date_hour, so there is only one document per site per hour.
+      // Creating a document that already exists counts as an update, which is not allowed,
+      // so the same slot can never be booked twice.
+      allow create: if isSignedIn()
+        && request.resource.data.keys().hasOnly(['siteId', 'siteTitle', 'userId', 'date', 'hour', 'start', 'groupSize', 'createdAt'])
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.siteId is string
+        && exists(/databases/$(database)/documents/events/$(request.resource.data.siteId))
+        && request.resource.data.siteTitle is string
+        && request.resource.data.siteTitle.size() <= 100
+        && request.resource.data.date is string
+        && request.resource.data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && request.resource.data.hour is int
+        && request.resource.data.hour >= 9
+        && request.resource.data.hour <= 16
+        && bookingId == request.resource.data.siteId + '_' + request.resource.data.date + '_' + string(request.resource.data.hour)
+        && request.resource.data.start is timestamp
+        && request.resource.data.start > request.time
+        && request.resource.data.start < request.time + duration.value(61, 'd')
+        && request.resource.data.groupSize is int
+        && request.resource.data.groupSize >= 1
+        && request.resource.data.groupSize <= 20
+        && request.resource.data.createdAt == request.time;
+
+      allow update: if false;
+
+      // Users can cancel their own visits that haven't happened yet
+      allow delete: if isSignedIn()
+        && resource.data.userId == request.auth.uid
+        && resource.data.start > request.time;
+    }
+
     match /ratings/{ratingId} {
       // Anyone can view ratings so the average is public
       allow read: if true;

@@ -12,6 +12,7 @@ import LeaderboardView from '@/views/LeaderboardView.vue'
 import DonateView from '@/views/DonateView.vue'
 import DonationsView from '@/views/DonationsView.vue'
 import ImpactView from '@/views/ImpactView.vue'
+import BookView from '@/views/BookView.vue'
 import { useAuthStore } from '@/stores/auth'
 
 const routes = [
@@ -74,6 +75,12 @@ const routes = [
     path: '/donate',
     name: 'Donate',
     component: DonateView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/book',
+    name: 'Book',
+    component: BookView,
     meta: { requiresAuth: true }
   },
   {
