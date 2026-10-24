@@ -1,6 +1,6 @@
 <script setup>
 import NavBar from '../components/NavBar.vue'
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { collection, getDocs, doc, updateDoc, addDoc } from 'firebase/firestore'
 import { db } from '../firebase/init.js'
 import { useAuthStore } from '@/stores/auth'
@@ -8,6 +8,8 @@ import sampleEvents from '@/assets/json/events.json'
 import sampleResources from '@/assets/json/resources.json'
 import sampleDonors from '@/assets/json/donors.json'
 import { exportToCsv, exportToPdf, datedFilename } from '@/utils/exportData.js'
+import Chart from 'primevue/chart'
+import { groupByPeriod } from '@/utils/chartData.js'
 
 const authStore = useAuthStore()
 
@@ -28,6 +30,104 @@ const fetchUsers = async () => {
     console.error('Error fetching users:', err)
     error.value = 'Error loading users.'
   }
+}
+
+const events = ref([])
+const ratings = ref([])
+const donations = ref([])
+
+// Loads everything the overview needs at the same time
+const fetchDashboardData = async () => {
+  try {
+    const [eventsSnapshot, ratingsSnapshot, donationsSnapshot] = await Promise.all([
+      getDocs(collection(db, 'events')),
+      getDocs(collection(db, 'ratings')),
+      getDocs(collection(db, 'donations'))
+    ])
+    const toArray = (snapshot) => {
+      const array = []
+      snapshot.forEach((docSnap) => array.push({ id: docSnap.id, ...docSnap.data() }))
+      return array
+    }
+    events.value = toArray(eventsSnapshot)
+    ratings.value = toArray(ratingsSnapshot)
+    donations.value = toArray(donationsSnapshot)
+  } catch (err) {
+    console.error('Error loading dashboard data:', err)
+    error.value = 'Error loading the dashboard overview.'
+  }
+}
+
+const adminCount = computed(() => users.value.filter((user) => user.role === 'admin').length)
+const userCount = computed(() => users.value.length - adminCount.value)
+
+// e.g. "2 users, 1 admin"
+const roleSummary = computed(() => {
+  const plural = (count, word) => `${count} ${word}${count === 1 ? '' : 's'}`
+  return `${plural(userCount.value, 'user')}, ${plural(adminCount.value, 'admin')}`
+})
+
+const upcomingEventCount = computed(() => {
+  const now = new Date()
+  return events.value.filter((event) => new Date(event.date) >= now).length
+})
+
+const totalDonated = computed(() => {
+  return donations.value.reduce((total, donation) => total + donation.amount, 0)
+})
+
+const averageRating = computed(() => {
+  if (ratings.value.length === 0) return null
+  const totalStars = ratings.value.reduce((total, rating) => total + rating.stars, 0)
+  return (totalStars / ratings.value.length).toFixed(1)
+})
+
+const formatCurrency = (amount) => {
+  return amount.toLocaleString('en-AU', { style: 'currency', currency: 'AUD', maximumFractionDigits: 0 })
+}
+
+// Doughnut chart: how many accounts have each role (updates straight away when a role is changed)
+const roleChartData = computed(() => ({
+  labels: ['Users', 'Admins'],
+  datasets: [{ data: [userCount.value, adminCount.value], backgroundColor: ['#81c784', '#1b5e20'] }]
+}))
+
+const roleChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { legend: { position: 'bottom' } }
+}
+
+// Bar chart: dollars donated each month
+const donationsByMonth = computed(() => {
+  return groupByPeriod(
+    donations.value.filter((donation) => donation.createdAt),
+    (donation) => donation.createdAt.toDate(),
+    (donation) => donation.amount,
+    'month'
+  )
+})
+
+const donationChartData = computed(() => ({
+  labels: donationsByMonth.value.labels,
+  datasets: [
+    {
+      label: 'Donated (AUD)',
+      data: donationsByMonth.value.values,
+      backgroundColor: '#66bb6a',
+      borderRadius: 4
+    }
+  ]
+}))
+
+const donationChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { display: false },
+    tooltip: { callbacks: { label: (context) => formatCurrency(context.parsed.y) } }
+  },
+  scales: { y: { beginAtZero: true, ticks: { callback: (value) => `$${value}` } } }
 }
 
 // Saves the role picked in the dropdown to that user's Firestore doc
@@ -116,7 +216,10 @@ const exportUsersPdf = async () => {
   }
 }
 
-onMounted(fetchUsers)
+onMounted(() => {
+  fetchUsers()
+  fetchDashboardData()
+})
 </script>
 
 <template>
@@ -126,6 +229,78 @@ onMounted(fetchUsers)
 
     <p v-if="message" class="alert alert-success">{{ message }}</p>
     <p v-if="error" class="alert alert-danger">{{ error }}</p>
+
+    <h2 class="h4">Overview</h2>
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-lg-3">
+        <div class="card h-100 text-center">
+          <div class="card-body">
+            <p class="h3 text-success mb-0">{{ users.length }}</p>
+            <p class="small text-muted mb-0">accounts ({{ roleSummary }})</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="card h-100 text-center">
+          <div class="card-body">
+            <p class="h3 text-success mb-0">{{ formatCurrency(totalDonated) }}</p>
+            <p class="small text-muted mb-0">from {{ donations.length }} donations</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="card h-100 text-center">
+          <div class="card-body">
+            <p class="h3 text-success mb-0">{{ events.length }}</p>
+            <p class="small text-muted mb-0">events ({{ upcomingEventCount }} upcoming)</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="card h-100 text-center">
+          <div class="card-body">
+            <p class="h3 text-success mb-0">{{ averageRating ? `${averageRating} ★` : '-' }}</p>
+            <p class="small text-muted mb-0">average event rating ({{ ratings.length }} ratings)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-md-5">
+        <div class="card h-100">
+          <div class="card-body">
+            <h3 class="h6">Accounts by role</h3>
+            <Chart
+              type="doughnut"
+              :data="roleChartData"
+              :options="roleChartOptions"
+              :canvasProps="{ role: 'img', 'aria-label': `Accounts by role: ${roleSummary}` }"
+              class="dashboard-chart"
+            />
+          </div>
+        </div>
+      </div>
+      <div class="col-md-7">
+        <div class="card h-100">
+          <div class="card-body">
+            <h3 class="h6">Donations per month</h3>
+            <p v-if="donations.length === 0" class="text-muted small">No donations yet.</p>
+            <Chart
+              v-else
+              type="bar"
+              :data="donationChartData"
+              :options="donationChartOptions"
+              :canvasProps="{
+                role: 'img',
+                'aria-label': `Bar chart of donations per month, ${formatCurrency(totalDonated)} in total`
+              }"
+              class="dashboard-chart"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
 
     <h2 class="h4">Sample data</h2>
     <div class="d-flex flex-wrap gap-2 mb-4">
@@ -199,3 +374,9 @@ onMounted(fetchUsers)
     </div>
   </div>
 </template>
+
+<style scoped>
+.dashboard-chart {
+  height: 260px;
+}
+</style>
