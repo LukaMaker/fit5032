@@ -18,6 +18,7 @@ const menus = [
     id: 'discover',
     label: 'Discover & learn',
     links: [
+      { to: '/map', label: 'Explore Map' },
       { to: '/events', label: 'Events' },
       { to: '/resources', label: 'Resource Library' }
     ]

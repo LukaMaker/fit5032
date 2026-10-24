@@ -64,6 +64,28 @@ const loadSampleData = async (collectionName, items) => {
   }
 }
 
+// Copies lat/lng from events.json onto events already in Firestore (matched by title).
+// Updating keeps each event's id, so existing ratings still point at the right event.
+const addEventLocations = async () => {
+  message.value = ''
+  error.value = ''
+  try {
+    const querySnapshot = await getDocs(collection(db, 'events'))
+    let updatedCount = 0
+    for (const eventDoc of querySnapshot.docs) {
+      const match = sampleEvents.find((event) => event.title === eventDoc.data().title)
+      if (match) {
+        await updateDoc(doc(db, 'events', eventDoc.id), { lat: match.lat, lng: match.lng })
+        updatedCount++
+      }
+    }
+    message.value = `Added map locations to ${updatedCount} events.`
+  } catch (err) {
+    console.error('Error adding event locations:', err)
+    error.value = 'Error adding map locations to events.'
+  }
+}
+
 const userExportColumns = [
   { header: 'First name', value: (user) => user.firstName },
   { header: 'Last name', value: (user) => user.lastName },
@@ -119,6 +141,9 @@ onMounted(fetchUsers)
       </button>
       <button type="button" class="btn btn-outline-success" @click="loadSampleData('donors', sampleDonors)">
         Load sample donors
+      </button>
+      <button type="button" class="btn btn-outline-success" @click="addEventLocations">
+        Add map locations to events
       </button>
     </div>
 

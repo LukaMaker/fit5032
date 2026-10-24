@@ -5,7 +5,9 @@
     "date": "2026-03-14",
     "description": "Planting coastal banksia and tea-tree along the foreshore to stabilise the dunes.",
     "familyFriendly": true,
-    "treesPlanted": 2150
+    "treesPlanted": 2150,
+    "lat": -38.1437,
+    "lng": 145.1223
   },
   {
     "title": "Sunshine North Street Trees",
@@ -13,7 +15,9 @@
     "date": "2026-05-09",
     "description": "Adding shade trees to residential streets with the lowest canopy cover in the west.",
     "familyFriendly": true,
-    "treesPlanted": 1840
+    "treesPlanted": 1840,
+    "lat": -37.7705,
+    "lng": 144.831
   },
   {
     "title": "Merri Creek Revegetation",
@@ -21,7 +25,9 @@
     "date": "2026-06-20",
     "description": "Restoring native grasses and river red gums along the creek banks. Some steep terrain.",
     "familyFriendly": false,
-    "treesPlanted": 3120
+    "treesPlanted": 3120,
+    "lat": -37.769,
+    "lng": 144.979
   },
   {
     "title": "Dandenong Creek Corridor",
@@ -29,7 +35,9 @@
     "date": "2026-08-01",
     "description": "Building a wildlife corridor of indigenous shrubs and trees beside the creek trail.",
     "familyFriendly": false,
-    "treesPlanted": 2560
+    "treesPlanted": 2560,
+    "lat": -37.9805,
+    "lng": 145.2045
   },
   {
     "title": "Broadmeadows School Garden",
@@ -37,7 +45,9 @@
     "date": "2026-09-12",
     "description": "Planting a fruit tree and pollinator garden with local primary school families.",
     "familyFriendly": true,
-    "treesPlanted": 640
+    "treesPlanted": 640,
+    "lat": -37.6815,
+    "lng": 144.9195
   },
   {
     "title": "Footscray Park Canopy Project",
@@ -45,7 +55,9 @@
     "date": "2026-11-07",
     "description": "Replacing ageing park trees with heat-tolerant natives. Gloves and tools provided.",
     "familyFriendly": true,
-    "treesPlanted": 0
+    "treesPlanted": 0,
+    "lat": -37.7905,
+    "lng": 144.904
   },
   {
     "title": "Werribee River Bushland Day",
@@ -53,7 +65,9 @@
     "date": "2026-11-28",
     "description": "Weeding and replanting the river bushland. Bring sturdy boots and water.",
     "familyFriendly": false,
-    "treesPlanted": 0
+    "treesPlanted": 0,
+    "lat": -37.9045,
+    "lng": 144.6655
   },
   {
     "title": "St Albans Community Orchard",
@@ -61,6 +75,8 @@
     "date": "2026-12-12",
     "description": "Starting a community orchard on council land. Morning tea provided for volunteers.",
     "familyFriendly": true,
-    "treesPlanted": 0
+    "treesPlanted": 0,
+    "lat": -37.7445,
+    "lng": 144.8005
   }
 ]

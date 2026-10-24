@@ -43,6 +43,12 @@ const routes = [
     component: EventsView
   },
   {
+    path: '/map',
+    name: 'Map',
+    // Loaded only when the page is opened, because the map library is large
+    component: () => import('@/views/MapView.vue')
+  },
+  {
     path: '/resources',
     name: 'Resources',
     component: ResourcesView
