@@ -1,5 +1,4 @@
 <script setup>
-import NavBar from '../components/NavBar.vue'
 import { ref, computed, onMounted } from 'vue'
 import { collection, getDocs } from 'firebase/firestore'
 import { db } from '../firebase/init.js'
@@ -149,7 +148,6 @@ onMounted(fetchData)
 </script>
 
 <template>
-  <NavBar></NavBar>
   <div class="container mt-5 mb-5">
     <h1 class="text-center mb-2">Our Impact</h1>
     <p class="text-center text-muted mb-4">

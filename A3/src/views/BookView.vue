@@ -1,5 +1,4 @@
 <script setup>
-import NavBar from '../components/NavBar.vue'
 import { ref, computed, onMounted } from 'vue'
 import { collection, query, where, getDocs, doc, setDoc, deleteDoc, Timestamp, serverTimestamp } from 'firebase/firestore'
 import { db } from '../firebase/init.js'
@@ -196,6 +195,11 @@ const calendarOptions = computed(() => ({
   // Only single one-hour slots in the future can be selected
   selectAllow: (info) => info.end - info.start === 60 * 60 * 1000 && info.start > new Date(),
   select: (info) => chooseSlot(info.start),
+  // FullCalendar's arrow icons are images with no text, so they are hidden from screen readers.
+  // Their buttons already have names like "Previous week".
+  datesSet: () => {
+    document.querySelectorAll('.fc-icon').forEach((icon) => icon.setAttribute('aria-hidden', 'true'))
+  },
   events: calendarEvents.value
 }))
 
@@ -280,7 +284,6 @@ onMounted(() => {
 </script>
 
 <template>
-  <NavBar></NavBar>
   <div class="container mt-5 mb-5">
     <h1 class="text-center mb-2">Book a site visit</h1>
     <p class="text-center text-muted mb-4">
@@ -350,6 +353,8 @@ onMounted(() => {
             <input
               type="number"
               id="group-size"
+              :aria-invalid="!!groupSizeError"
+              :aria-describedby="groupSizeError ? 'group-size-error' : undefined"
               class="form-control mb-1"
               min="1"
               :max="maxGroupSize"
@@ -358,7 +363,7 @@ onMounted(() => {
               @input="validateGroupSize"
               @blur="validateGroupSize"
             />
-            <div v-if="groupSizeError" class="text-danger small">{{ groupSizeError }}</div>
+            <div v-if="groupSizeError" id="group-size-error" class="text-danger small" role="alert">{{ groupSizeError }}</div>
             <div class="d-flex gap-2 mt-2">
               <button type="button" class="btn btn-success btn-sm" :disabled="isSaving" @click="confirmBooking">
                 {{ isSaving ? 'Booking...' : 'Confirm booking' }}

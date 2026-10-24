@@ -1,5 +1,4 @@
 <script setup>
-import NavBar from '../components/NavBar.vue'
 import { ref } from 'vue'
 import { sendPasswordResetEmail } from 'firebase/auth'
 import { auth } from '../firebase/init.js'
@@ -45,7 +44,6 @@ const sendResetEmail = async () => {
 </script>
 
 <template>
-  <NavBar></NavBar>
   <div class="container mt-5">
     <div class="row">
       <div class="col-md-8 offset-md-2 col-lg-6 offset-lg-3">
@@ -60,17 +58,19 @@ const sendResetEmail = async () => {
               type="email"
               class="form-control"
               id="email"
+              :aria-invalid="!!emailError"
+              :aria-describedby="emailError ? 'email-error' : undefined"
               maxlength="254"
               autocomplete="email"
               @blur="() => validateEmail(true)"
               @input="() => validateEmail(false)"
               v-model="email"
             />
-            <div v-if="emailError" class="text-danger">{{ emailError }}</div>
+            <div v-if="emailError" id="email-error" class="text-danger" role="alert">{{ emailError }}</div>
           </div>
 
-          <div v-if="message" class="alert alert-success">{{ message }}</div>
-          <div v-if="firebaseError" class="alert alert-danger">{{ firebaseError }}</div>
+          <div v-if="message" class="alert alert-success" role="status">{{ message }}</div>
+          <div v-if="firebaseError" class="alert alert-danger" role="alert">{{ firebaseError }}</div>
 
           <div class="text-center">
             <button type="submit" class="btn btn-primary">Send reset link</button>

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { signOut } from 'firebase/auth'
 import { auth } from '@/firebase/init.js'
@@ -82,13 +82,37 @@ const handleClickOutside = (event) => {
   }
 }
 
-// Close the dropdowns when Escape is pressed
+// Escape closes whichever menu is open and puts keyboard focus back on the button that opened it
 const handleKeydown = (event) => {
-  if (event.key === 'Escape') {
+  if (event.key !== 'Escape') return
+  if (openMenu.value) {
+    document.getElementById(`menu-button-${openMenu.value}`)?.focus()
     openMenu.value = null
+  }
+  if (isDropdownOpen.value) {
     isDropdownOpen.value = false
+    document.getElementById('account-button')?.focus()
+  }
+  if (isOpen.value) {
+    isOpen.value = false
+    document.getElementById('menu-toggle')?.focus()
   }
 }
+
+// Close every menu when the page changes
+watch(
+  () => route.fullPath,
+  () => {
+    openMenu.value = null
+    isDropdownOpen.value = false
+    isOpen.value = false
+  }
+)
+
+const fullName = computed(() => {
+  const user = authStore.user
+  return user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : ''
+})
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
@@ -104,22 +128,24 @@ onBeforeUnmount(() => {
   <div class="container">
     <header class="navbar-header">
       <div class="d-flex justify-content-between align-items-center py-3 top-row">
-        <div class="col-6">
-          Tree World
-        </div>
+        <router-link to="/" class="brand">Tree World</router-link>
 
         <button
+          id="menu-toggle"
           class="navbar-toggler d-lg-none"
           type="button"
           @click="isOpen = !isOpen"
-          aria-label="Toggle navigation"
+          aria-label="Menu"
+          :aria-expanded="isOpen"
+          aria-controls="mobile-menu"
         >
           <span class="hamburger-line"></span>
           <span class="hamburger-line"></span>
           <span class="hamburger-line"></span>
         </button>
 
-        <ul class="nav nav-pills flex-nowrap nav-links d-none d-lg-flex align-items-center">
+        <nav aria-label="Main" class="d-none d-lg-block">
+        <ul class="nav nav-pills flex-nowrap nav-links align-items-center">
           <li class="nav-item">
             <router-link to="/" class="nav-link text-nowrap" active-class="active">Home</router-link>
           </li>
@@ -127,6 +153,7 @@ onBeforeUnmount(() => {
           <!-- Nav dropdowns (Discover & learn, Get involved) -->
           <li v-for="menu in menus" :key="menu.id" class="nav-item position-relative nav-dropdown">
             <button
+              :id="`menu-button-${menu.id}`"
               type="button"
               class="nav-link text-nowrap"
               :class="{ active: isMenuActive(menu) }"
@@ -156,11 +183,19 @@ onBeforeUnmount(() => {
 
           <!-- Logged in: show initials avatar + dropdown -->
           <li class="nav-item position-relative" v-else ref="dropdownRef">
-            <button class="avatar-btn" @click="toggleDropdown">
+            <button
+              id="account-button"
+              type="button"
+              class="avatar-btn"
+              :aria-label="`${initials}, account menu for ${fullName}`"
+              :aria-expanded="isDropdownOpen"
+              aria-controls="account-menu"
+              @click="toggleDropdown"
+            >
               {{ initials }}
             </button>
 
-            <ul v-if="isDropdownOpen" class="dropdown-menu-custom">
+            <ul v-if="isDropdownOpen" id="account-menu" class="dropdown-menu-custom">
               <li>
                 <router-link to="/profile" class="dropdown-item" @click="closeDropdown">Profile</router-link>
               </li>
@@ -176,11 +211,13 @@ onBeforeUnmount(() => {
             </ul>
           </li>
         </ul>
+        </nav>
       </div>
 
+      <nav v-if="isOpen" aria-label="Main" class="d-lg-none">
       <ul
-        v-if="isOpen"
-        class="nav nav-pills flex-column dropdown-nav d-lg-none"
+        id="mobile-menu"
+        class="nav nav-pills flex-column dropdown-nav"
         @click="isOpen = false"
       >
         <li class="nav-item">
@@ -222,6 +259,7 @@ onBeforeUnmount(() => {
           </li>
         </template>
       </ul>
+      </nav>
     </header>
   </div>
 </template>
@@ -326,6 +364,21 @@ onBeforeUnmount(() => {
 
 .dropdown-item-btn {
   color: #b3261e;
+}
+
+.brand {
+  font-weight: 600;
+  color: #1b5e20;
+  text-decoration: none;
+}
+
+/* Clear focus outlines for keyboard users on the custom buttons and links */
+.brand:focus-visible,
+.navbar-toggler:focus-visible,
+.avatar-btn:focus-visible,
+.dropdown-item:focus-visible {
+  outline: 3px solid #1b5e20;
+  outline-offset: 2px;
 }
 
 .logout-mobile-btn {

@@ -1,5 +1,4 @@
 <script setup>
-import NavBar from '../components/NavBar.vue'
 import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
@@ -157,7 +156,6 @@ const validatePassword = (blur) => {
 </script>
 
 <template>
-  <NavBar></NavBar>
   <div class="container mt-5">
     <div class="row">
       <div class="col-md-8 offset-md-2">
@@ -170,13 +168,15 @@ const validatePassword = (blur) => {
                 type="text"
                 class="form-control"
                 id="firstname"
+                :aria-invalid="!!errors.firstName"
+                :aria-describedby="errors.firstName ? 'firstname-error' : undefined"
                 autocomplete="given-name"
                 maxlength="50"
                 @blur="() => validateFirstName(true)"
                 @input="() => validateFirstName(false)"
                 v-model="createData.firstName"
               />
-              <div v-if="errors.firstName" class="text-danger">{{ errors.firstName }}</div>
+              <div v-if="errors.firstName" id="firstname-error" class="text-danger" role="alert">{{ errors.firstName }}</div>
             </div>
             <div class="col-md-6 col-sm-6">
               <label for="lastname" class="form-label">Last Name</label>
@@ -184,13 +184,15 @@ const validatePassword = (blur) => {
                 type="text"
                 class="form-control"
                 id="lastname"
+                :aria-invalid="!!errors.lastName"
+                :aria-describedby="errors.lastName ? 'lastname-error' : undefined"
                 autocomplete="family-name"
                 maxlength="50"
                 @blur="() => validateLastName(true)"
                 @input="() => validateLastName(false)"
                 v-model="createData.lastName"
               />
-              <div v-if="errors.lastName" class="text-danger">{{ errors.lastName }}</div>
+              <div v-if="errors.lastName" id="lastname-error" class="text-danger" role="alert">{{ errors.lastName }}</div>
             </div>
           </div>
 
@@ -201,13 +203,15 @@ const validatePassword = (blur) => {
                 type="email"
                 class="form-control"
                 id="email"
+                :aria-invalid="!!errors.email"
+                :aria-describedby="errors.email ? 'email-error' : undefined"
                 autocomplete="email"
                 maxlength="254"
                 @blur="() => validateEmail(true)"
                 @input="() => validateEmail(false)"
                 v-model="createData.email"
               />
-              <div v-if="errors.email" class="text-danger">{{ errors.email }}</div>
+              <div v-if="errors.email" id="email-error" class="text-danger" role="alert">{{ errors.email }}</div>
             </div>
           </div>
           <div class="row mb-3">
@@ -218,9 +222,10 @@ const validatePassword = (blur) => {
                   :type="showPassword ? 'text' : 'password'"
                   class="form-control"
                   id="password"
+                  :aria-invalid="!!errors.password"
+                  :aria-describedby="errors.password ? 'password-help password-error' : 'password-help'"
                   maxlength="128"
                   autocomplete="new-password"
-                  aria-describedby="password-help"
                   @blur="() => validatePassword(true)"
                   @input="() => validatePassword(false)"
                   v-model="createData.password"
@@ -238,7 +243,7 @@ const validatePassword = (blur) => {
                 At least 8 characters, with upper and lower case letters, a number and a special
                 character.
               </div>
-              <div v-if="errors.password" class="text-danger">{{ errors.password }}</div>
+              <div v-if="errors.password" id="password-error" class="text-danger" role="alert">{{ errors.password }}</div>
             </div>
             <div class="col-md-6 col-sm-6">
               <label for="confirm-password" class="form-label">Confirm password</label>
@@ -246,18 +251,20 @@ const validatePassword = (blur) => {
                 :type="showPassword ? 'text' : 'password'"
                 class="form-control"
                 id="confirm-password"
+                :aria-invalid="!!errors.confirmPassword"
+                :aria-describedby="errors.confirmPassword ? 'confirm-password-error' : undefined"
                 autocomplete="new-password"
                 maxlength="128"
                 v-model="createData.confirmPassword"
                 @blur="() => validateConfirmPassword(true)"
               />
-              <div v-if="errors.confirmPassword" class="text-danger">
+              <div v-if="errors.confirmPassword" id="confirm-password-error" class="text-danger" role="alert">
                 {{ errors.confirmPassword }}
               </div>
             </div>
           </div>
 
-          <div v-if="firebaseError" class="alert alert-danger">{{ firebaseError }}</div>
+          <div v-if="firebaseError" class="alert alert-danger" role="alert">{{ firebaseError }}</div>
 
           <div class="text-center">
             <button type="submit" class="btn btn-primary me-2">Submit</button>

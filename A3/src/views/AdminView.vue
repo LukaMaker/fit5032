@@ -1,5 +1,4 @@
 <script setup>
-import NavBar from '../components/NavBar.vue'
 import { ref, computed, onMounted } from 'vue'
 import { collection, getDocs, doc, updateDoc, addDoc } from 'firebase/firestore'
 import { db } from '../firebase/init.js'
@@ -223,7 +222,6 @@ onMounted(() => {
 </script>
 
 <template>
-  <NavBar></NavBar>
   <div class="container mt-5">
     <h1 class="text-center mb-4">Admin Dashboard</h1>
 
@@ -362,6 +360,7 @@ onMounted(() => {
               <select
                 class="form-select form-select-sm"
                 v-model="user.role"
+                :aria-label="`Role for ${user.firstName} ${user.lastName}`"
                 @change="changeRole(user)"
                 :disabled="user.id === authStore.user?.uid"
               >

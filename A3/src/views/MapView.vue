@@ -1,5 +1,4 @@
 <script setup>
-import NavBar from '../components/NavBar.vue'
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { collection, getDocs } from 'firebase/firestore'
 import { db } from '../firebase/init.js'
@@ -309,7 +308,6 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <NavBar></NavBar>
   <div class="container mt-4 mb-5">
     <h1 class="text-center mb-2">Explore Map</h1>
     <p class="text-center text-muted mb-4">

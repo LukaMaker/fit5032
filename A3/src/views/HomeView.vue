@@ -1,5 +1,4 @@
 <script setup>
-import NavBar from '../components/NavBar.vue'
 import { ref, computed, onMounted } from 'vue'
 import { collection, getDocs } from 'firebase/firestore'
 import { db } from '../firebase/init.js'
@@ -43,7 +42,6 @@ onMounted(fetchEvents)
 </script>
 
 <template>
-  <NavBar></NavBar>
   <div class="container mt-5">
     <h1 class="text-center mb-4">{{ WelcomeLabel }}</h1>
 
@@ -60,6 +58,7 @@ onMounted(fetchEvents)
             <div
               class="progress"
               role="progressbar"
+              :aria-label="`Progress toward the ${treeGoal.toLocaleString('en-AU')} tree goal`"
               :aria-valuenow="goalPercent"
               aria-valuemin="0"
               aria-valuemax="100"

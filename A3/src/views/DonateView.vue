@@ -1,5 +1,4 @@
 <script setup>
-import NavBar from '../components/NavBar.vue'
 import { ref, computed, onUnmounted } from 'vue'
 import { collection, addDoc, onSnapshot, serverTimestamp } from 'firebase/firestore'
 import { db } from '../firebase/init.js'
@@ -133,7 +132,6 @@ onUnmounted(stopWatching)
 </script>
 
 <template>
-  <NavBar></NavBar>
   <div class="container mt-5">
     <div class="row">
       <div class="col-md-8 offset-md-2 col-lg-6 offset-lg-3">
@@ -181,6 +179,8 @@ onUnmounted(stopWatching)
                 type="number"
                 class="form-control"
                 id="custom-amount"
+                :aria-invalid="!!errors.amount"
+                :aria-describedby="errors.amount ? 'custom-amount-error' : undefined"
                 min="2"
                 max="10000"
                 step="1"
@@ -191,7 +191,7 @@ onUnmounted(stopWatching)
                 @blur="() => validateAmount(true)"
               />
             </div>
-            <div v-if="errors.amount" class="text-danger">{{ errors.amount }}</div>
+            <div v-if="errors.amount" id="custom-amount-error" class="text-danger" role="alert">{{ errors.amount }}</div>
           </fieldset>
 
           <fieldset class="mb-3" :disabled="isWorking">
@@ -215,13 +215,15 @@ onUnmounted(stopWatching)
                 type="text"
                 class="form-control"
                 id="suburb"
+                :aria-invalid="!!errors.suburb"
+                :aria-describedby="errors.suburb ? 'suburb-error' : undefined"
                 maxlength="50"
                 autocomplete="address-level2"
                 v-model="suburb"
                 @input="() => validateSuburb(false)"
                 @blur="() => validateSuburb(true)"
               />
-              <div v-if="errors.suburb" class="text-danger">{{ errors.suburb }}</div>
+              <div v-if="errors.suburb" id="suburb-error" class="text-danger" role="alert">{{ errors.suburb }}</div>
             </div>
           </fieldset>
 
@@ -229,7 +231,7 @@ onUnmounted(stopWatching)
             Your receipt will be emailed to <strong>{{ authStore.user?.email }}</strong>.
           </p>
 
-          <div v-if="submitError" class="alert alert-danger">{{ submitError }}</div>
+          <div v-if="submitError" class="alert alert-danger" role="alert">{{ submitError }}</div>
 
           <div v-if="isWorking" class="alert alert-secondary" role="status">
             <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>

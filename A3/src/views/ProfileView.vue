@@ -1,5 +1,4 @@
 <script setup>
-import NavBar from '../components/NavBar.vue'
 import { computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 
@@ -12,7 +11,6 @@ const memberSince = computed(() => {
 </script>
 
 <template>
-  <NavBar></NavBar>
   <div class="container mt-5">
     <div class="row">
       <div class="col-md-8 offset-md-2 col-lg-6 offset-lg-3">

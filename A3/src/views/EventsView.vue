@@ -1,5 +1,4 @@
 <script setup>
-import NavBar from '../components/NavBar.vue'
 import { ref, computed, onMounted } from 'vue'
 import { collection, getDocs, doc, setDoc } from 'firebase/firestore'
 import { db } from '../firebase/init.js'
@@ -117,7 +116,6 @@ onMounted(() => {
 </script>
 
 <template>
-  <NavBar></NavBar>
   <div class="container mt-5">
     <h1 class="text-center mb-4">Events</h1>
 
@@ -156,7 +154,7 @@ onMounted(() => {
 
           <div v-if="!isUpcoming(event.date)" class="card-footer bg-white">
             <p v-if="eventRatings[event.id]" class="mb-1">
-              <span class="text-warning">★</span>
+              <span class="star-icon" aria-hidden="true">★</span>
               <strong>{{ eventRatings[event.id].average }}</strong>
               <span class="text-muted">
                 ({{ eventRatings[event.id].count }}
@@ -165,8 +163,9 @@ onMounted(() => {
             </p>
             <p v-else class="text-muted mb-1">No ratings yet</p>
 
-            <div v-if="authStore.isLoggedIn">
-              <span class="small text-muted me-1">Your rating:</span>
+            <div v-if="authStore.isLoggedIn" role="group" :aria-label="`Your rating for ${event.title}`">
+              <span class="small text-muted me-1" aria-hidden="true">Your rating:</span>
+              <!-- aria-pressed tells screen readers which star is the user's current rating -->
               <button
                 v-for="star in 5"
                 :key="star"
@@ -174,6 +173,7 @@ onMounted(() => {
                 class="star-btn"
                 :class="{ selected: star <= myRating(event.id) }"
                 :aria-label="`Rate ${star} out of 5`"
+                :aria-pressed="star === myRating(event.id)"
                 @click="rateEvent(event.id, star)"
               >
                 ★
@@ -191,21 +191,29 @@ onMounted(() => {
 </template>
 
 <style scoped>
+/* Star colours have at least 3:1 contrast against white, so they're visible to low-vision users */
 .star-btn {
   background: none;
   border: none;
   padding: 0 2px;
   font-size: 1.4rem;
   line-height: 1;
-  color: #ccc;
+  color: #767676;
   cursor: pointer;
 }
 
-.star-btn.selected {
-  color: #f5b301;
+.star-btn.selected,
+.star-icon {
+  color: #b26a00;
 }
 
 .star-btn:hover {
-  color: #ffd54f;
+  color: #e08a00;
+}
+
+.star-btn:focus-visible {
+  outline: 3px solid #1b5e20;
+  outline-offset: 1px;
+  border-radius: 4px;
 }
 </style>

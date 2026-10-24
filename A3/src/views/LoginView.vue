@@ -1,5 +1,4 @@
 <script setup>
-import NavBar from '../components/NavBar.vue'
 import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { signInWithEmailAndPassword } from 'firebase/auth'
@@ -85,7 +84,6 @@ const signIn = async () => {
 </script>
 
 <template>
-  <NavBar></NavBar>
   <div class="container mt-5">
     <div class="row">
       <div class="col-md-8 offset-md-2">
@@ -98,13 +96,15 @@ const signIn = async () => {
                 type="email"
                 class="form-control"
                 id="email"
+                :aria-invalid="!!errors.email"
+                :aria-describedby="errors.email ? 'email-error' : undefined"
                 maxlength="254"
                 autocomplete="email"
                 @blur="() => validateEmail(true)"
                 @input="() => validateEmail(false)"
                 v-model="loginData.email"
               />
-              <div v-if="errors.email" class="text-danger">{{ errors.email }}</div>
+              <div v-if="errors.email" id="email-error" class="text-danger" role="alert">{{ errors.email }}</div>
             </div>
           </div>
           <div class="row mb-3">
@@ -115,6 +115,8 @@ const signIn = async () => {
                   :type="showPassword ? 'text' : 'password'"
                   class="form-control"
                   id="password"
+                  :aria-invalid="!!errors.password"
+                  :aria-describedby="errors.password ? 'password-error' : undefined"
                   maxlength="128"
                   autocomplete="current-password"
                   @blur="() => validatePassword(true)"
@@ -130,14 +132,14 @@ const signIn = async () => {
                   {{ showPassword ? 'Hide' : 'Show' }}
                 </button>
               </div>
-              <div v-if="errors.password" class="text-danger">{{ errors.password }}</div>
+              <div v-if="errors.password" id="password-error" class="text-danger" role="alert">{{ errors.password }}</div>
               <div class="mt-1 text-end">
                 <router-link to="/forgot_password" class="small">Forgot password?</router-link>
               </div>
             </div>
           </div>
 
-          <div v-if="firebaseError" class="alert alert-danger">{{ firebaseError }}</div>
+          <div v-if="firebaseError" class="alert alert-danger" role="alert">{{ firebaseError }}</div>
 
           <div class="text-center">
             <button type="submit" class="btn btn-primary me-2">Submit</button>
