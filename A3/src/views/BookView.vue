@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/auth'
 import FullCalendar from '@fullcalendar/vue3'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
+import enAuLocale from '@fullcalendar/core/locales/en-au'
 
 const authStore = useAuthStore()
 
@@ -59,14 +60,12 @@ while (firstBookableDay.getDay() === 0 || firstBookableDay.getDay() === 6) {
   firstBookableDay.setDate(firstBookableDay.getDate() + 1)
 }
 
+// Shows a slot as the weekday, dd/mm/yyyy date and time
 const formatSlot = (start) => {
-  return start.toLocaleString('en-AU', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    hour: 'numeric',
-    minute: '2-digit'
-  })
+  const date = start.toLocaleDateString('en-AU', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  const weekday = start.toLocaleDateString('en-AU', { weekday: 'long' })
+  const time = start.toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit' })
+  return `${weekday} ${date}, ${time}`
 }
 
 const fetchSites = async () => {
@@ -176,6 +175,10 @@ const chooseSlot = (start) => {
 
 const calendarOptions = computed(() => ({
   plugins: [timeGridPlugin, interactionPlugin],
+  // Australian locale, so the title shows dd/mm/yyyy and column headers show dd/mm
+  locale: enAuLocale,
+  titleFormat: { day: '2-digit', month: '2-digit', year: 'numeric' },
+  dayHeaderFormat: { weekday: 'short', day: '2-digit', month: '2-digit' },
   initialView: window.innerWidth < 768 ? 'timeGridDay' : 'timeGridWeek',
   initialDate: firstBookableDay,
   headerToolbar: { left: 'prev,next today', center: 'title', right: 'timeGridWeek,timeGridDay' },
