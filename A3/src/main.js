@@ -17,7 +17,7 @@ const app = createApp(App)
 const pinia = createPinia()
 
 app.use(pinia)
-app.use(PrimeVue, { theme: { preset: Aura } })
+app.use(PrimeVue, { theme: { preset: Aura, options: { darkModeSelector: false } } })
 
 const authStore = useAuthStore()
 let appMounted = false
